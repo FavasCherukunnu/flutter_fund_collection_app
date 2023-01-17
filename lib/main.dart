@@ -6,7 +6,7 @@ import 'package:trans_pay/screen/SignUpScreen.dart';
 import 'package:trans_pay/screen/chatScreen.dart';
 import 'package:trans_pay/screen/homeScreen.dart';
 import 'package:trans_pay/screen/settingsScreen.dart';
-import 'package:trans_pay/source/common.dart';
+import 'package:trans_pay/constants/common.dart';
 
 void main() {
   runApp(const MyApp());

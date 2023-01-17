@@ -3,7 +3,7 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/models/userDetails.dart';
-import 'package:trans_pay/source/common.dart';
+import 'package:trans_pay/constants/common.dart';
 
 class LoginPage extends StatelessWidget {
    LoginPage({super.key});

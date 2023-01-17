@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:trans_pay/source/common.dart';
+import 'package:trans_pay/constants/common.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

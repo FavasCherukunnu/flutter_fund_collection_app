@@ -1,19 +1,21 @@
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 
 class UserClass extends ChangeNotifier{
 
   String userName;
   String password;
-  List<Chat> chat=[];
+  List<Group> groups=[];
 
   UserClass({required this.userName,required this.password});
 
-  void addToChat(Chat value){
-    chat.add(value);
+  void addToGroup(Group value){
+    groups.add(value);
+    notifyListeners();
   }
 
   void addmsg(String msg,int index){
-    chat[index].message.add(Messages(time: DateTime.now(),messages: msg));
+    groups[index].message.add(Messages(time: DateTime.now(),messages: msg));
     notifyListeners();
   }
   
@@ -21,14 +23,17 @@ class UserClass extends ChangeNotifier{
 
 
 
-class Chat{
+class Group{
   String name;
   List<Messages> message =[];
-  Chat({required this.name});
+  Group({required this.name});
 }
 
 class Messages {
   String messages='';
   DateTime time = DateTime.now();
   Messages({this.messages='',required this.time});
+
+  String get formattedTime => DateFormat('kk:mm:a').format(time);
+
 }

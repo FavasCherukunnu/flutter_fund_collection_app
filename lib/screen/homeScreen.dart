@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/models/popUpChoices.dart';
 import 'package:trans_pay/models/userDetails.dart';
-import 'package:trans_pay/source/common.dart';
+import 'package:trans_pay/constants/common.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
@@ -32,9 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     userdata = Provider.of<UserClass>(context);
-    fetchUserData();
+    //fetchUserData();
 
-    print(userdata.chat.length.toString());
+    print(userdata.groups.length.toString());
 
 
     return Scaffold(
@@ -68,7 +68,110 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
 
       ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: (){
+          addGroup();
+        },
+        tooltip: 'Create Group',
+      ),
     );
+  }
+
+  void addGroup() async{
+    final formKey = GlobalKey<FormState>();
+    final groupName = TextEditingController();
+    switch(await showDialog(
+      context: context, 
+      builder: (context) {
+        return SimpleDialog(
+          clipBehavior: Clip.hardEdge,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          children: <Widget>[
+            
+            Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        'Add Group',
+                        style: TextStyle(
+                          fontFamily: 'SofiSans',
+                          fontSize: 20,
+                          letterSpacing: 1,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 50,),
+
+                    transText(text: 'Group name',bold: true,size: 17),
+                    const SizedBox(height: 10,),
+                    TextFormField(
+                      controller: groupName,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter group name';
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        //border: OutlineInputBorder(),
+                        hintText: 'Enter group name',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+              
+                    ),
+                    SizedBox(height: 30,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        
+                        SimpleDialogOption(
+                          child: transText(text: 'Cancel',bold: true,color: primaryColor),
+                          onPressed: (){
+                            Navigator.pop(context,0);
+                          },
+                        ),
+                        SimpleDialogOption(
+                          
+                          onPressed: () { 
+
+                            if(formKey.currentState!.validate()) {
+                              Navigator.pop(context,1);
+                            }
+
+                          },
+                          
+                          child: transText(text: 'Add',bold: true,color: primaryColor)
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+            // SimpleDialogOption(
+            //   onPressed: () {
+            //     Navigator.pop(context, 1);
+            //   },
+            //   child: transText(text: 'Create')
+            // ),
+          ],
+        );
+      }
+      ,
+    )){
+      case 0 :
+        break;
+      case 1 :
+        userdata.addToGroup(Group(name: groupName.text));
+
+    }
   }
 
   PopupMenuButton<PopupChoices> buildPopUpMenu() {
@@ -123,10 +226,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       backgroundColor: primaryColor,
                 
                     ),
-                    title: Text(userdata.chat[index].name),
+                    title: transText(text:userdata.groups[index].name,size: 17),
                     onTap: () {
                       Navigator.pushNamed(context, '/chatScreen',arguments: {
-                        'chatData':userdata.chat[index],
+                        'chatData':userdata.groups[index],
                         'index':index,
                       });
                     },
@@ -135,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             );
           },
-          itemCount: userdata.chat.length,
+          itemCount: userdata.groups.length,
         );
         break;
       case 1:
@@ -151,25 +254,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void fetchUserData(){
     
-    List<Chat> value = [
-      Chat(name: 'group1'),
-      Chat(name: 'group2'),
-      Chat(name: 'group3'),
-      Chat(name: 'group4'),
-      Chat(name: 'group5'),
-      Chat(name: 'group6'),
-      Chat(name: 'group7'),
-      Chat(name: 'group8'),
-      Chat(name: 'group9'),
-      Chat(name: 'group10'),
-      Chat(name: 'group11'),
-      Chat(name: 'group12'),
-      Chat(name: 'group13'),
+    List<Group> value = [
+      Group(name: 'group1'),
+      Group(name: 'group2'),
+      Group(name: 'group3'),
+      Group(name: 'group4'),
+
 
     ];
 
-    if(userdata.chat.isEmpty){
-      value.forEach((element) {userdata.addToChat(element);});
+    if(userdata.groups.isEmpty){
+      value.forEach((element) {userdata.addToGroup(element);});
     }else{
       print('data already fetched');
     }
