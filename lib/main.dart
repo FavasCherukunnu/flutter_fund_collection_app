@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider<UserClass>(
+    return ChangeNotifierProvider<UserClass>(
       create: (context)=>UserClass(userName: 'favas', password: 'saleel'),
       child: MaterialApp(
         theme: ThemeData(

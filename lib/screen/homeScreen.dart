@@ -127,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       Navigator.pushNamed(context, '/chatScreen',arguments: {
                         'chatData':userdata.chat[index],
+                        'index':index,
                       });
                     },
                   ),

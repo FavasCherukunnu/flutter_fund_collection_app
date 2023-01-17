@@ -1,4 +1,6 @@
-class UserClass {
+import 'package:flutter/cupertino.dart';
+
+class UserClass extends ChangeNotifier{
 
   String userName;
   String password;
@@ -8,6 +10,11 @@ class UserClass {
 
   void addToChat(Chat value){
     chat.add(value);
+  }
+
+  void addmsg(String msg,int index){
+    chat[index].message.add(Messages(time: DateTime.now(),messages: msg));
+    notifyListeners();
   }
   
 }
@@ -23,4 +30,5 @@ class Chat{
 class Messages {
   String messages='';
   DateTime time = DateTime.now();
+  Messages({this.messages='',required this.time});
 }

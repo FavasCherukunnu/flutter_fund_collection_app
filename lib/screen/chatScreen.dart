@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:provider/provider.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/source/common.dart';
 
@@ -12,71 +13,88 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+
+  TextEditingController amountDetails = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
 
     final arguments = ModalRoute.of(context)!.settings.arguments as Map;
 
     Chat chat = arguments['chatData'];
+    int indexofChat = arguments['index'] as int;
+
+    print('index is $indexofChat');
 
     return Scaffold(
       appBar: AppBar(
         title: transText(text: chat.name ),
       ),
-      body:Column(
-        children: [
-          Flexible(
-            child: ListView.builder(
-              itemBuilder: (context, index){
-                return buildItem(chat.message[index]);
-              },
-              itemCount: chat.message.length,
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(20, 5, 10, 5),
-            child:Row(
-              children: [
-                Flexible(
-                  child: Container(
-                    child: TextField(
-                      onSubmitted: (value) {
-
-                      },
-                      style: const TextStyle(
-                        fontFamily: 'SofiSans',
-                        letterSpacing: 1,
-                      ),
-                      //controller: ,
-                      decoration: const InputDecoration.collapsed(
-                        hintText: 'Enter Amount',
-                        hintStyle: TextStyle(
-                          fontFamily: 'SofiSans',
-                          letterSpacing: 1,
+      body:Consumer<UserClass>(
+        builder: (BuildContext context, userclass, Widget? child) {  
+          return Column(
+            children: [
+              Flexible(
+                child: ListView.builder(
+                  itemBuilder: (context, index){
+                    return buildItem(chat.message[index]);
+                  },
+                  itemCount: chat.message.length,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.fromLTRB(20, 5, 10, 5),
+                child:Row(
+                  children: [
+                    Flexible(
+                      child: Container(
+                        child: TextField(
+                          controller: amountDetails,
+                          onSubmitted: (value) {
+        
+                          },
+                          style: const TextStyle(
+                            fontFamily: 'SofiSans',
+                            letterSpacing: 1,
+                          ),
+                          //controller: ,
+                          decoration: const InputDecoration.collapsed(
+                            hintText: 'Enter Amount',
+                            hintStyle: TextStyle(
+                              fontFamily: 'SofiSans',
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          //focusNode: focusNode,
+                          autofocus: true,
                         ),
                       ),
-                      //focusNode: focusNode,
-                      autofocus: true,
                     ),
-                  ),
-                ),
-                Material(
-                  color: Colors.white,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 8),
-                    child: IconButton(
-                      icon: Icon(Icons.send),
-                      onPressed: () {},
-                      color: primaryColor,
-                      tooltip: 'pay',
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                    Material(
+                      color: Colors.white,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 8),
+                        child: IconButton(
+                          icon: Icon(Icons.send),
+                          onPressed: () {
 
-          )
-        ],
+                            final String amount = amountDetails.text;
+                            userclass.addmsg(amount, indexofChat);
+
+                          },
+                          color: primaryColor,
+                          tooltip: 'pay',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        
+              )
+            ],
+          );
+        },
+        
       ) ,
     );
   }
