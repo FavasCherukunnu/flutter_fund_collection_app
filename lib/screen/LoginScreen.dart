@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:provider/provider.dart';
+import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/source/common.dart';
 
 class LoginPage extends StatelessWidget {
@@ -10,20 +12,21 @@ class LoginPage extends StatelessWidget {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  
+
 
   void logIn(context){
 
-    if(_usernameController.text == 'favas' && _passwordController.text == 'saleel'){
-      showDialog(
-        context: context, 
-        builder: (context)=>AlertDialog(
-          content: Text('successfully Loged in'),
-        ),
-      );
+    final userData = Provider.of<UserClass>(context,listen: false);
+
+    if(_usernameController.text == userData.userName && _passwordController.text == userData.password){
+      
+      Navigator.pushReplacementNamed(context, '/homeScreen');
+
     }else{
       showDialog(
         context: context, 
-        builder: (context)=>AlertDialog(
+        builder: (context)=>const AlertDialog(
           content: Text('INCORRECT !!!'),
         ),
       );
@@ -39,14 +42,7 @@ class LoginPage extends StatelessWidget {
       backgroundColor: primaryBgColor,
         appBar: AppBar(
           backgroundColor: primaryColor,
-          title: const Text(
-            'TransPay',
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'SofiSans',
-              letterSpacing: 1,
-            ),
-          ),
+          title: transText(text: 'TransPay'),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 30),
