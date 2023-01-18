@@ -21,6 +21,11 @@ class UserClass extends ChangeNotifier{
     notifyListeners();
 
   }
+
+  void editGroupName({required int index,required String groupName}){
+    groups[index].name = groupName;
+    notifyListeners();
+  }
   
 }
 
@@ -52,5 +57,14 @@ class Messages {
   Messages({this.amount='',required this.time, required this.senderId});
 
   String get formattedTime => DateFormat('kk:mm:a').format(time);
+
+}
+
+class GroupDetails{
+
+  String senterId;
+  int amount;
+
+  GroupDetails(this.senterId,this.amount);
 
 }

@@ -32,9 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     userdata = Provider.of<UserClass>(context);
-    //fetchUserData();
-
-    print(userdata.groups.length.toString());
 
 
     return Scaffold(

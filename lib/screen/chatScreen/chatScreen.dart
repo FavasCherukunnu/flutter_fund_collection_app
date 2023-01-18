@@ -37,7 +37,8 @@ class _ChatScreenState extends State<ChatScreen> {
               child: transText(text: group.name ),
               onTap: () {
                 Navigator.pushNamed(context, '/chatDetailsScreen',arguments: {
-                  'group':group
+                  'group':group,
+                  'index':indexofChat,
                 });
               },
             ),
