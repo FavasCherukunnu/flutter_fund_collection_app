@@ -24,12 +24,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
     Group group = arguments['chatData'];
     int indexofChat = arguments['index'] as int;
+    String senterId = arguments['senterId'] as String;
     ScrollController listViewController = ScrollController();
 
 
     return Scaffold(
       appBar: AppBar(
-        title: transText(text: group.name ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GestureDetector(
+              child: transText(text: group.name ),
+              onTap: () {
+                Navigator.pushNamed(context, '/chatDetailsScreen',arguments: {
+                  'group':group
+                });
+              },
+            ),
+          ],
+        ),
       ),
       body:Consumer<UserClass>(
         builder: (BuildContext context, userclass, Widget? child) {  
@@ -92,7 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 currentFocus.unfocus();
                               }
                               amountDetails.clear();
-                              userclass.addmsg(amount, indexofChat);
+                              userclass.addmsg(msg:amount, index:indexofChat,senterId: senterId);
                             }
 
                           },
@@ -133,7 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                     Expanded(
                       child: transText(
-                        text:messages.messages,
+                        text:messages.amount,
                         size: 20,
                         color: Colors.white
                       ),

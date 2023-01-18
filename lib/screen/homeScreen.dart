@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: const InputDecoration(
                         //border: OutlineInputBorder(),
                         hintText: 'Enter group name',
-                        prefixIcon: Icon(Icons.person),
+                        prefixIcon: Icon(Icons.group),
                       ),
               
                     ),
@@ -155,12 +155,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // SimpleDialogOption(
-            //   onPressed: () {
-            //     Navigator.pop(context, 1);
-            //   },
-            //   child: transText(text: 'Create')
-            // ),
           ],
         );
       }
@@ -231,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.pushNamed(context, '/chatScreen',arguments: {
                         'chatData':userdata.groups[index],
                         'index':index,
+                        'senterId':userdata.userName
                       });
                     },
                   ),

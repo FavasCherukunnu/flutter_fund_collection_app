@@ -14,9 +14,12 @@ class UserClass extends ChangeNotifier{
     notifyListeners();
   }
 
-  void addmsg(String msg,int index){
-    groups[index].message.add(Messages(time: DateTime.now(),messages: msg));
+  void addmsg({required String msg,required int index,required String senterId}){
+
+    groups[index].message.add(Messages(time: DateTime.now(),amount: msg,senderId: senterId));
+    groups[index].addGroupDetails(amount: msg,userId:senterId );
     notifyListeners();
+
   }
   
 }
@@ -26,13 +29,27 @@ class UserClass extends ChangeNotifier{
 class Group{
   String name;
   List<Messages> message =[];
+  Map<String,int> groupDetails = {};
   Group({required this.name});
+
+  void addGroupDetails({required String userId,required String amount}){
+    int? totAmount = groupDetails[userId];
+    if(totAmount==null){
+      groupDetails[userId] = int.parse(amount);
+    }else{
+      groupDetails[userId] = int.parse(amount)+totAmount;
+    }
+
+    print(groupDetails);
+  }
+
 }
 
 class Messages {
-  String messages='';
+  String amount=''; //amount
   DateTime time = DateTime.now();
-  Messages({this.messages='',required this.time});
+  String senderId;
+  Messages({this.amount='',required this.time, required this.senderId});
 
   String get formattedTime => DateFormat('kk:mm:a').format(time);
 
