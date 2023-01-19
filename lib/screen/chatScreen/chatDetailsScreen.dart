@@ -112,6 +112,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
 
     final formKey = GlobalKey<FormState>();
     final groupName = TextEditingController();
+    groupName.text = userdata.groups[indexOfGroup].name;
     switch(await showDialog(
       context: context, 
       builder: (context) {
@@ -130,6 +131,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                     transText(text: 'Group name',bold: true,size: 17),
                     const SizedBox(height: 10,),
                     TextFormField(
+                      autofocus: true,
                       controller: groupName,
                       validator: (value) {
                         if (value == null || value.isEmpty) {

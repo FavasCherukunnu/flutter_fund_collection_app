@@ -28,103 +28,103 @@ class _ChatScreenState extends State<ChatScreen> {
     ScrollController listViewController = ScrollController();
 
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            GestureDetector(
-              child: transText(text: group.name ),
-              onTap: () {
-                Navigator.pushNamed(context, '/chatDetailsScreen',arguments: {
-                  'group':group,
-                  'index':indexofChat,
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-      body:Consumer<UserClass>(
+    return Consumer<UserClass>(
         builder: (BuildContext context, userclass, Widget? child) {  
-          return Column(
-            children: [
-              Flexible(
-                child: ListView.builder(
-                  itemBuilder: (context, index){
-                    return buildItem(group.message.reversed.toList()[index]);
-                  },
-                  itemCount: group.message.length,
-                  reverse: true,
-                  controller: listViewController,
-                ),
+          return Scaffold(
+            appBar: AppBar(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  GestureDetector(
+                    child: transText(text: userclass.groups[indexofChat].name ),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/chatDetailsScreen',arguments: {
+                        'group':group,
+                        'index':indexofChat,
+                      });
+                    },
+                  ),
+                ],
               ),
-              Container(
-                padding: EdgeInsets.fromLTRB(20, 5, 10, 5),
-                child:Row(
-                  children: [
-                    Flexible(
-                      child: Container(
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          controller: amountDetails,
-                          // onSubmitted: (value) {
-        
-                          // },
-                          style: const TextStyle(
-                            fontFamily: 'SofiSans',
-                            letterSpacing: 1,
-                          ),
-                          //controller: ,
-                          decoration: const InputDecoration.collapsed(
-                            hintText: 'Enter Amount',
-                            hintStyle: TextStyle(
+            ),
+            body: Column(
+              children: [
+                Flexible(
+                  child: ListView.builder(
+                    itemBuilder: (context, index){
+                      return buildItem(userclass.groups[indexofChat].message.reversed.toList()[index]);
+                    },
+                    itemCount: userclass.groups[indexofChat].message.length,
+                    reverse: true,
+                    controller: listViewController,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(20, 5, 10, 5),
+                  child:Row(
+                    children: [
+                      Flexible(
+                        child: Container(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            controller: amountDetails,
+                            // onSubmitted: (value) {
+          
+                            // },
+                            style: const TextStyle(
                               fontFamily: 'SofiSans',
                               letterSpacing: 1,
                             ),
+                            //controller: ,
+                            decoration: const InputDecoration.collapsed(
+                              hintText: 'Enter Amount',
+                              hintStyle: TextStyle(
+                                fontFamily: 'SofiSans',
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            //focusNode: focusNode,
+                            autofocus: false,
                           ),
-                          //focusNode: focusNode,
-                          autofocus: false,
                         ),
                       ),
-                    ),
-                    Material(
-                      //color: Colors.white,
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 8),
-                        child: IconButton(
-                          icon: Icon(Icons.send),
-                          onPressed: () {
+                      Material(
+                        //color: Colors.white,
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 8),
+                          child: IconButton(
+                            icon: Icon(Icons.send),
+                            onPressed: () {
 
-                            final String amount = amountDetails.text;
-                            FocusScopeNode currentFocus = FocusScope.of(context);
-                            //got to bottom of listview
-                            listViewController.animateTo(listViewController.position.minScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.easeOut);
-                            if(amount.isNotEmpty){
-                              
-                              if (!currentFocus.hasPrimaryFocus) {
-                                currentFocus.unfocus();
+                              final String amount = amountDetails.text;
+                              FocusScopeNode currentFocus = FocusScope.of(context);
+                              //got to bottom of listview
+                              listViewController.animateTo(listViewController.position.minScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.easeOut);
+                              if(amount.isNotEmpty){
+                                
+                                if (!currentFocus.hasPrimaryFocus) {
+                                  currentFocus.unfocus();
+                                }
+                                amountDetails.clear();
+                                userclass.addmsg(msg:amount, index:indexofChat,senterId: senterId);
                               }
-                              amountDetails.clear();
-                              userclass.addmsg(msg:amount, index:indexofChat,senterId: senterId);
-                            }
 
-                          },
-                          color: primaryColor,
-                          tooltip: 'pay',
+                            },
+                            color: primaryColor,
+                            tooltip: 'pay',
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-        
-              )
-            ],
+                    ],
+                  ),
+          
+                )
+              ],
+            )
           );
-        },
-        
-      ) ,
+        }
     );
+        
   }
 
   Widget buildItem (Messages messages){

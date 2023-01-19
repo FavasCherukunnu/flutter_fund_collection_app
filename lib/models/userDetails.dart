@@ -45,7 +45,6 @@ class Group{
       groupDetails[userId] = int.parse(amount)+totAmount;
     }
 
-    print(groupDetails);
   }
 
 }
