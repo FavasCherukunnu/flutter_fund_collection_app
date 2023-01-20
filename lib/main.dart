@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/models/userDetails.dart';
@@ -9,7 +11,26 @@ import 'package:trans_pay/screen/homeScreen.dart';
 import 'package:trans_pay/screen/settingsScreen.dart';
 import 'package:trans_pay/constants/common.dart';
 
-void main() {
+import 'constants/appConstants.dart';
+
+void main() async{
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  //check it is web or android
+  if(kIsWeb){
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: Constants.apiKey, 
+        appId: Constants.appId, 
+        messagingSenderId: Constants.messagingSenderId, 
+        projectId: Constants.projectId,
+      )
+    );
+  }else{
+    await Firebase.initializeApp();
+  }
+
   runApp(const MyApp());
 }
 
@@ -24,7 +45,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.deepPurple,
         ),
-        initialRoute: '/homeScreen',
+        // initialRoute: '/homeScreen',
         routes: {
           '/':(context) => LoginPage(),
           '/signUp':(context)=>SignUpPage(),

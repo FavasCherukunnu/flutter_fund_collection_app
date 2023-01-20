@@ -5,15 +5,27 @@ import 'package:provider/provider.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
    LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+
   final _usernameController = TextEditingController();
+
   final _passwordController = TextEditingController();
 
-  
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    
+  }
 
   void logIn(context){
 
@@ -33,7 +45,6 @@ class LoginPage extends StatelessWidget {
     }
 
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,23 +82,15 @@ class LoginPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 50,),
 
-                        const Text(
-                          'Username',
-                          style: TextStyle(
-                            fontFamily: 'SofiSans',
-                            fontSize: 17,
-                            letterSpacing: 1,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        transText(text:'Email',size:17,bold:true),
                         const SizedBox(height: 10,),
                         TextFormField(
                           controller: _usernameController,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter some text';
+                            if (RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value!)) {                              
+                              return null;
                             }
-                            return null;
+                            return "Enter valid email";
                           },
                           decoration: const InputDecoration(
                             //border: OutlineInputBorder(),
@@ -98,21 +101,14 @@ class LoginPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 30,),
 
-                        const Text(
-                          'Password',
-                          style: TextStyle(
-                            fontFamily: 'SofiSans',
-                            fontSize: 17,
-                            letterSpacing: 1,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        transText(text:'Password',size:17,bold:true),
                         const SizedBox(height: 10,),
                         TextFormField(
+                          obscureText: true,
                           controller: _passwordController,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Password can not be null';
+                            if (value!.length<6) {
+                              return 'Password must be atleast 6 character';
                             }
                             return null;
                           },

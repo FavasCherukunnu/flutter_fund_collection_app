@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "101452769298",
+    "project_id": "transpay-7464a",
+    "storage_bucket": "transpay-7464a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101452769298:android:9c96815c18c123778410cb",
+        "android_client_info": {
+          "package_name": "com.example.trans_pay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "101452769298-djsvtjqkqcsgmuslfgaqg8r0mlrfb3vh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.trans_pay",
+            "certificate_hash": "12cbba2a852d105e11de9cb21d47fc1bf4ad5afb"
+          }
+        },
+        {
+          "client_id": "101452769298-3rm8rk97obrhv982sr6ud48dma303913.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3D2EUkLX_tMGPKdFCu_LuaiKy2rI1ngA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "101452769298-3rm8rk97obrhv982sr6ud48dma303913.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

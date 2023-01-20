@@ -89,15 +89,15 @@ class SignUpPage extends StatelessWidget {
                         const SizedBox(height: 10,),
                         TextFormField(
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter Email Address';
+                            if (RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value!)) {                              
+                              return null;
                             }
-                            return null;
+                            return "Enter valid email";
                           },
                           decoration: const InputDecoration(
                             //border: OutlineInputBorder(),
-                            hintText: 'Enter your email address',
-                            prefixIcon: Icon(Icons.email),
+                            hintText: 'Enter your username',
+                            prefixIcon: Icon(Icons.person),
                           ),
                   
                         ),
@@ -114,9 +114,10 @@ class SignUpPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 10,),
                         TextFormField(
+                          //obscureText: true,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Password can not be null';
+                            if (value!.length<6) {
+                              return 'Password must be atleast 6 character';
                             }
                             return null;
                           },
