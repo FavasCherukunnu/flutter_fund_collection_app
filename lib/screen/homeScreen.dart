@@ -1,11 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/constants/appConstants.dart';
+import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/models/popUpChoices.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
+import 'package:trans_pay/services/authentication.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
@@ -16,58 +17,48 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<PopupChoices> choices = [
-    PopupChoices(title: 'Settings', icon: Icons.settings),
+    PopupChoices(title: 'Profile', icon: Icons.account_circle),
     PopupChoices(title: 'Logout', icon: Icons.logout),
   ];
-
   late UserClass userdata;
   //bottom navigation index
-  int _bottomNavValue=0;
-
-
-
+  int _bottomNavValue = 0;
+  AuthService authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
-
-
     userdata = Provider.of<UserClass>(context);
 
-
     return Scaffold(
-
       appBar: AppBar(
         title: transText(text: AppConstants.homeTitle),
         actions: [
-          buildPopUpMenu()
+          IconButton(onPressed: () {}, icon: Icon(Icons.search)),
+          buildPopUpMenu(),
         ],
+        elevation: 0,
       ),
       body: SafeArea(
         child: _buildScreen(),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        onTap:(value){
+        onTap: (value) {
           _bottomNavValue = value;
-          setState(() {
-            
-          });
+          setState(() {});
         },
         currentIndex: _bottomNavValue,
-        items:const  [
+        items: const [
           BottomNavigationBarItem(
             label: 'home',
             icon: Icon(Icons.home),
           ),
           BottomNavigationBarItem(
-            label: 'transactions',
-            icon: Icon(Icons.balance)
-          )
+              label: 'transactions', icon: Icon(Icons.balance))
         ],
-
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: (){
+        onPressed: () {
           addGroup();
         },
         tooltip: 'Create Group',
@@ -75,17 +66,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void addGroup() async{
+  void addGroup() async {
     final formKey = GlobalKey<FormState>();
     final groupName = TextEditingController();
-    switch(await showDialog(
-      context: context, 
+    switch (await showDialog(
+      context: context,
       builder: (context) {
         return SimpleDialog(
           clipBehavior: Clip.hardEdge,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           children: <Widget>[
-            
             Padding(
               padding: const EdgeInsets.all(18.0),
               child: Form(
@@ -104,10 +94,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 50,),
-
-                    transText(text: 'Group name',bold: true,size: 17),
-                    const SizedBox(height: 10,),
+                    const SizedBox(
+                      height: 50,
+                    ),
+                    transText(text: 'Group name', bold: true, size: 17),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     TextFormField(
                       controller: groupName,
                       validator: (value) {
@@ -121,31 +114,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         hintText: 'Enter group name',
                         prefixIcon: Icon(Icons.group),
                       ),
-              
                     ),
-                    SizedBox(height: 30,),
+                    SizedBox(
+                      height: 30,
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        
                         SimpleDialogOption(
-                          child: transText(text: 'Cancel',bold: true,color: primaryColor),
-                          onPressed: (){
-                            Navigator.pop(context,0);
+                          child: transText(
+                              text: 'Cancel', bold: true, color: primaryColor),
+                          onPressed: () {
+                            Navigator.pop(context, 0);
                           },
                         ),
                         SimpleDialogOption(
-                          
-                          onPressed: () { 
-
-                            if(formKey.currentState!.validate()) {
-                              Navigator.pop(context,1);
-                            }
-
-                          },
-                          
-                          child: transText(text: 'Add',bold: true,color: primaryColor)
-                        ),
+                            onPressed: () {
+                              if (formKey.currentState!.validate()) {
+                                Navigator.pop(context, 1);
+                              }
+                            },
+                            child: transText(
+                                text: 'Add', bold: true, color: primaryColor)),
                       ],
                     )
                   ],
@@ -154,75 +144,90 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         );
-      }
-      ,
-    )){
-      case 0 :
+      },
+    )) {
+      case 0:
         break;
-      case 1 :
+      case 1:
         userdata.addToGroup(Group(name: groupName.text));
-
     }
   }
 
   PopupMenuButton<PopupChoices> buildPopUpMenu() {
     return PopupMenuButton<PopupChoices>(
-      onSelected: (
-        (value) {
-          if(value.title == 'Settings'){
-            Navigator.pushNamed(context,'/settingsScreen' );
-          }
-          if(value.title == 'Logout'){
-            Navigator.pushReplacementNamed(context, '/');
-          }
+      onSelected: ((value) {
+        if (value.title == 'Profile') {
+          Navigator.pushNamed(context, '/profileScreen');
         }
-      ),
-      itemBuilder: (BuildContext context) { 
-
-          return choices.map(
-            (choiceItem){
-              return PopupMenuItem<PopupChoices>(
-                value: choiceItem,
-                child: Row(
-                  children: [
-                    Icon(choiceItem.icon,color: primaryColor),
-                    const SizedBox(width: 10,),
-                    Text(choiceItem.title),
-
-                  ],
-                ),
+        if (value.title == 'Logout') {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Center(child: Text('Logout')),
+                content: const Text("Are you sure you want to logout?"),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('No')),
+                  TextButton(
+                      onPressed: () async {
+                        await authService.logout(context);
+                      },
+                      child: const Text('Yes'))
+                ],
               );
-            }
-          ).toList();
-            
-
-        },
-      );
+            },
+          );
+        }
+      }),
+      itemBuilder: (BuildContext context) {
+        return choices.map((choiceItem) {
+          return PopupMenuItem<PopupChoices>(
+            value: choiceItem,
+            child: Row(
+              children: [
+                Icon(choiceItem.icon, color: primaryColor),
+                const SizedBox(
+                  width: 10,
+                ),
+                Text(choiceItem.title),
+                const SizedBox(
+                  width: 10,
+                )
+              ],
+            ),
+          );
+        }).toList();
+      },
+      padding: EdgeInsets.all(1),
+    );
   }
 
-  Widget _buildScreen(){
-
+  Widget _buildScreen() {
     switch (_bottomNavValue) {
       case 0:
-        
         return ListView.builder(
           itemBuilder: (context, index) {
             return Column(
               children: [
-                Card(margin: EdgeInsets.all(0.3),
+                Card(
+                  margin: EdgeInsets.all(0.3),
                   child: ListTile(
-                    contentPadding: EdgeInsets.fromLTRB(15, 8, 5 , 8),
+                    contentPadding: EdgeInsets.fromLTRB(15, 8, 5, 8),
                     leading: const CircleAvatar(
                       radius: 25,
                       backgroundColor: primaryColor,
-                
                     ),
-                    title: transText(text:userdata.groups[index].name,size: 17),
+                    title:
+                        transText(text: userdata.groups[index].name, size: 17),
                     onTap: () {
-                      Navigator.pushNamed(context, '/chatScreen',arguments: {
-                        'chatData':userdata.groups[index],
-                        'index':index,
-                        'senterId':userdata.userName
+                      Navigator.pushNamed(context, '/chatScreen', arguments: {
+                        'chatData': userdata.groups[index],
+                        'index': index,
+                        'senterId': userdata.userName
                       });
                     },
                   ),
@@ -234,33 +239,11 @@ class _HomeScreenState extends State<HomeScreen> {
         );
         break;
       case 1:
-          return  Center(
-            child: transText(text: 'This is transaction page',size: 17)
-          );
-          break;
+        return Center(
+            child: transText(text: 'This is transaction page', size: 17));
+        break;
       default:
         return Container();
     }
-
   }
-
-  void fetchUserData(){
-    
-    List<Group> value = [
-      Group(name: 'group1'),
-      Group(name: 'group2'),
-      Group(name: 'group3'),
-      Group(name: 'group4'),
-
-
-    ];
-
-    if(userdata.groups.isEmpty){
-      value.forEach((element) {userdata.addToGroup(element);});
-    }else{
-      print('data already fetched');
-    }
-
-  }
-
 }
