@@ -28,4 +28,60 @@ class DatabaseService {
         await userCollection.where("email", isEqualTo: email).get();
     return snapshot;
   }
+
+  getUserGroups() async {
+    return userCollection.doc(uid).snapshots();
+  }
+
+  // creating a group
+  Future createGroup(String userName, String id, String groupName) async {
+    DocumentReference groupDocumentReference = await groupCollection.add({
+      "groupName": groupName,
+      "groupIcon": "",
+      "admin": "${id}_$userName",
+      "members": [],
+      "groupId": "",
+      "recentMessage": "",
+      "recentMessageSender": "",
+    });
+    // update the members
+    await groupDocumentReference.update({
+      "members": FieldValue.arrayUnion(["${uid}_$userName"]),
+      "groupId": groupDocumentReference.id,
+    });
+
+    DocumentReference userDocumentReference = userCollection.doc(uid);
+    return await userDocumentReference.update({
+      "groups":
+          FieldValue.arrayUnion(["${groupDocumentReference.id}_$groupName"])
+    });
+  }
+
+  getGroupInfo(String groupId) {
+    return groupCollection.doc(groupId).snapshots();
+  }
+
+  gpSearchByName(String groupName) {
+    return groupCollection.where('groupName', isEqualTo: groupName).get();
+  }
+
+  joinGroup(
+      String groupId, String userId, String username, String groupName) async {
+    await groupCollection.doc(groupId).update({
+      'members': FieldValue.arrayUnion(['${userId}_$username'])
+    });
+    await userCollection.doc(userId).update({
+      'groups': FieldValue.arrayUnion(['${groupId}_$groupName'])
+    });
+  }
+
+  leftFromeGroup(
+      String groupId, String userId, String username, String groupName) async {
+    await groupCollection.doc(groupId).update({
+      'members': FieldValue.arrayRemove(['${userId}_$username'])
+    });
+    await userCollection.doc(userId).update({
+      'groups': FieldValue.arrayRemove(['${groupId}_$groupName'])
+    });
+  }
 }

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:trans_pay/constants/common.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  String? email;
+  String? username;
+  ProfileScreen({super.key, this.username, this.email});
 
   @override
   Widget build(BuildContext context) {
+    final arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    email = arguments['email'];
+    username = arguments['username'];
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -28,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 transText(text: 'Username', bold: true, size: 17),
-                transText(text: 'Sample', size: 17)
+                transText(text: username ?? 'NA', size: 17)
               ],
             ),
             const SizedBox(
@@ -38,7 +43,7 @@ class ProfileScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 transText(text: 'Email', bold: true, size: 17),
-                transText(text: 'Sample@gmail.com', size: 17),
+                transText(text: email ?? 'NA', size: 17),
               ],
             ),
           ],

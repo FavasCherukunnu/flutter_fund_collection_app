@@ -6,7 +6,7 @@ import '../helper/helper_function.dart';
 
 class AuthService {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-
+  String? uid;
   Future registerUserWithEmailandPassword(
       {required String username,
       required String email,
@@ -18,6 +18,7 @@ class AuthService {
 
       if (user != null) {
         // call our database service to update the user data.
+        uid = user.uid;
         await DatabaseService(uid: user.uid).savingUserData(username, email);
 
         return true;
@@ -35,6 +36,7 @@ class AuthService {
           .user!;
 
       if (user != null) {
+        uid = user.uid;
         // call our database service to update the user data.
         //await DatabaseService(uid: user.uid).savingUserData(username, email);
 
@@ -50,6 +52,7 @@ class AuthService {
     try {
       await HelperFunctions.saveUserNameSF("");
       await HelperFunctions.saveUserEmailSF("");
+      await HelperFunctions.saveUserIdSF("");
       await HelperFunctions.saveUserLoggedInStatus(false);
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } catch (e) {

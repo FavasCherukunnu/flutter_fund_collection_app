@@ -233,6 +233,7 @@ class _SignUpPageState extends State<SignUpPage> {
           await HelperFunctions.saveUserLoggedInStatus(true);
           await HelperFunctions.saveUserEmailSF(emailCtlr.text);
           await HelperFunctions.saveUserNameSF(usernameCtlr.text);
+          await HelperFunctions.saveUserIdSF('${authService.uid}');
           Navigator.pushReplacementNamed(context, '/homeScreen');
         } else {
           setState(() {

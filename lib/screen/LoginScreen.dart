@@ -59,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
         await HelperFunctions.saveUserNameSF(data['username']);
         await HelperFunctions.saveUserEmailSF(data['email']);
         await HelperFunctions.saveUserLoggedInStatus(true);
+        await HelperFunctions.saveUserIdSF('${_auth.uid}');
 
         Navigator.pushReplacementNamed(context, '/homeScreen');
       } else {

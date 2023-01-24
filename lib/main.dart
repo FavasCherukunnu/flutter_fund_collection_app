@@ -9,9 +9,7 @@ import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
 import 'package:trans_pay/screen/chatScreen/chatScreen.dart';
 import 'package:trans_pay/screen/homeScreen.dart';
 import 'package:trans_pay/screen/profileScreen.dart';
-import 'package:trans_pay/screen/settingsScreen.dart';
-import 'package:trans_pay/constants/common.dart';
-
+import 'package:trans_pay/screen/searchScreen.dart';
 import 'constants/appConstants.dart';
 
 void main() async {
@@ -51,7 +49,7 @@ class MyApp extends StatelessWidget {
             '/homeScreen': (context) => HomeScreen(),
             '/profileScreen': (context) => ProfileScreen(),
             '/chatScreen': (context) => ChatScreen(),
-            '/chatDetailsScreen': (context) => ChatDetailsScreen(),
+            '/searchScreen': (context) => SearchScreen(),
           },
           debugShowCheckedModeBanner: false),
     );

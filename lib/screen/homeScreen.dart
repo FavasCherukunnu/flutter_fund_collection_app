@@ -8,6 +8,10 @@ import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/services/authentication.dart';
 
+import '../services/databaseService.dart';
+import '../widget/groupTIle.dart';
+import '../widget/widget.dart';
+
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
 
@@ -21,19 +25,37 @@ class _HomeScreenState extends State<HomeScreen> {
     PopupChoices(title: 'Logout', icon: Icons.logout),
   ];
   late UserClass userdata;
+  String? email;
+  String? username;
+  Stream? groups;
+  bool _isLoading = false;
+  String groupName = "";
+
   //bottom navigation index
   int _bottomNavValue = 0;
   AuthService authService = AuthService();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    gettingUserData();
+  }
 
   @override
   Widget build(BuildContext context) {
     userdata = Provider.of<UserClass>(context);
 
     return Scaffold(
+      backgroundColor: primaryBgColor,
       appBar: AppBar(
         title: transText(text: AppConstants.homeTitle),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.search)),
+          IconButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/searchScreen');
+              },
+              icon: Icon(Icons.search)),
           buildPopUpMenu(),
         ],
         elevation: 0,
@@ -64,6 +86,27 @@ class _HomeScreenState extends State<HomeScreen> {
         tooltip: 'Create Group',
       ),
     );
+  }
+
+  gettingUserData() async {
+    await HelperFunctions.getUserEmailFromSF().then((value) {
+      setState(() {
+        email = value!;
+      });
+    });
+    await HelperFunctions.getUserNameFromSF().then((val) {
+      setState(() {
+        username = val!;
+      });
+    });
+    // getting the list of snapshots in our stream
+    await DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
+        .getUserGroups()
+        .then((snapshot) {
+      setState(() {
+        groups = snapshot;
+      });
+    });
   }
 
   void addGroup() async {
@@ -149,15 +192,105 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         break;
       case 1:
-        userdata.addToGroup(Group(name: groupName.text));
+        // userdata.addToGroup(Group(name: groupName.text));
+
+        if (groupName.text != "") {
+          setState(() {
+            _isLoading = true;
+          });
+          DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
+              .createGroup(username!, FirebaseAuth.instance.currentUser!.uid,
+                  groupName.text)
+              .whenComplete(() {
+            _isLoading = false;
+          });
+          //Navigator.of(context).pop();
+          showSnackbar(context, Colors.green, "Group created successfully.");
+        }
     }
+  }
+
+  String getName(String id) {
+    return id.substring(id.indexOf('_') + 1);
+  }
+
+  String getId(String id) {
+    return id.substring(0, id.indexOf('_'));
+  }
+
+  groupList() {
+    return StreamBuilder(
+      stream: groups,
+      builder: (context, AsyncSnapshot snapshot) {
+        // make some checks
+        if (snapshot.hasData) {
+          if (snapshot.data['groups'] != null) {
+            if (snapshot.data['groups'].length != 0) {
+              return ListView.builder(
+                itemBuilder: (context, index) {
+                  //sorting the recent created group first
+                  final reverseIndex =
+                      snapshot.data['groups'].length - index - 1;
+                  return GroupTile(
+                    groupName: getName(snapshot.data['groups'][reverseIndex]),
+                    groupId: getId(snapshot.data['groups'][reverseIndex]),
+                  );
+                },
+                itemCount: snapshot.data['groups'].length,
+              );
+            } else {
+              return noGroupWidget();
+            }
+          } else {
+            return noGroupWidget();
+          }
+        } else {
+          return Center(
+            child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor),
+          );
+        }
+      },
+    );
+  }
+
+  noGroupWidget() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 25),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () {
+              addGroup();
+            },
+            child: Icon(
+              Icons.add_circle,
+              color: Colors.grey[700],
+              size: 75,
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          const Text(
+            "You've not joined any groups, tap on the add icon to create a group or also search from top search button.",
+            textAlign: TextAlign.center,
+          )
+        ],
+      ),
+    );
   }
 
   PopupMenuButton<PopupChoices> buildPopUpMenu() {
     return PopupMenuButton<PopupChoices>(
       onSelected: ((value) {
         if (value.title == 'Profile') {
-          Navigator.pushNamed(context, '/profileScreen');
+          Navigator.pushNamed(context, '/profileScreen', arguments: {
+            'username': username,
+            'email': email,
+          });
         }
         if (value.title == 'Logout') {
           showDialog(
@@ -209,34 +342,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildScreen() {
     switch (_bottomNavValue) {
       case 0:
-        return ListView.builder(
-          itemBuilder: (context, index) {
-            return Column(
-              children: [
-                Card(
-                  margin: EdgeInsets.all(0.3),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.fromLTRB(15, 8, 5, 8),
-                    leading: const CircleAvatar(
-                      radius: 25,
-                      backgroundColor: primaryColor,
-                    ),
-                    title:
-                        transText(text: userdata.groups[index].name, size: 17),
-                    onTap: () {
-                      Navigator.pushNamed(context, '/chatScreen', arguments: {
-                        'chatData': userdata.groups[index],
-                        'index': index,
-                        'senterId': userdata.userName
-                      });
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-          itemCount: userdata.groups.length,
-        );
+        return groupList();
+
         break;
       case 1:
         return Center(
