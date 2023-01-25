@@ -17,3 +17,13 @@ Widget transText(
         fontWeight: bold ? FontWeight.bold : null),
   );
 }
+
+isNumeric(string) => num.tryParse(string) != null;
+
+getId(String data) {
+  return data.substring(0, data.indexOf('_'));
+}
+
+getName(String data) {
+  return data.substring(data.indexOf('_') + 1);
+}

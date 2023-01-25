@@ -166,12 +166,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   FocusScopeNode currentFocus = FocusScope.of(context);
                   //got to bottom of listview
 
-                  if (amount.isNotEmpty) {
-                    await sentMessage(amount);
+                  if (amount.isNotEmpty && isNumeric(amount)) {
                     if (!currentFocus.hasPrimaryFocus) {
                       currentFocus.unfocus();
                     }
                     amountDetails.clear();
+                    await sentMessage(amount);
                   }
                   // listViewController.animateTo(
                   //     listViewController.position.minScrollExtent,

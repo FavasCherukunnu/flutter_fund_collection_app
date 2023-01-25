@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -28,6 +29,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     super.initState();
 
     groupInfo = DatabaseService().getGroupInfo(widget.groupId);
+    // final totalAmount = DatabaseService().getTotalAmountInfo(widget.groupId);
   }
 
   @override
@@ -67,6 +69,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
       body: StreamBuilder(
           stream: groupInfo,
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+            //final totalAmount = snapshot.data;
             if (snapshot.hasData) {
               final group = snapshot.data;
               String admin = group['admin'];
@@ -153,7 +156,23 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                       transText(text: getName(members[index])),
                                   trailing: Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child: transText(text: 'Na', size: 17),
+                                    child: StreamBuilder(
+                                      stream: DatabaseService()
+                                          .getTotalAmountInfo(
+                                              widget.groupId, members[index]),
+                                      builder: (context,
+                                          AsyncSnapshot<QuerySnapshot>
+                                              snapshot) {
+                                        if (snapshot.hasData) {
+                                          final doc = snapshot.data!.docs[0];
+                                          print(doc['amount']);
+                                          return transText(
+                                              text: doc['amount'].toString());
+                                        } else {
+                                          return transText(text: 'Na');
+                                        }
+                                      },
+                                    ),
                                   ),
                                 ),
                               ),

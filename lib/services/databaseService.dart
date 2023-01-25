@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/models/userDetails.dart';
 
 class DatabaseService {
@@ -50,6 +51,8 @@ class DatabaseService {
       "groupId": groupDocumentReference.id,
     });
 
+    storeAmount(groupDocumentReference.id, "${id}_$userName", 0);
+
     DocumentReference userDocumentReference = userCollection.doc(uid);
     return await userDocumentReference.update({
       "groups":
@@ -61,8 +64,26 @@ class DatabaseService {
     return groupCollection.doc(groupId).snapshots();
   }
 
+// total amount of each members in a group
+  getTotalAmountInfo(String groupId, String memberIdN) {
+    return groupCollection
+        .doc(groupId)
+        .collection('AmountDetails')
+        .where('memberId', isEqualTo: memberIdN)
+        .snapshots();
+  }
+
   gpSearchByName(String groupName) {
     return groupCollection.where('groupName', isEqualTo: groupName).get();
+  }
+  //add total amount of a member to database of group
+
+  storeAmount(String groupId, String senterIdN, int amount) async {
+    await groupCollection
+        .doc(groupId)
+        .collection('AmountDetails')
+        .doc(getId(senterIdN))
+        .set({'amount': amount, 'memberId': senterIdN});
   }
 
   joinGroup(
@@ -73,6 +94,7 @@ class DatabaseService {
     await userCollection.doc(userId).update({
       'groups': FieldValue.arrayUnion(['${groupId}_$groupName'])
     });
+    await storeAmount(groupId, '${userId}_$username', 0);
   }
 
   leftFromeGroup(
@@ -87,6 +109,11 @@ class DatabaseService {
 
   sentMessage(String groupId, String amount, String senterId, DateTime time,
       {String message = ""}) async {
+    await groupCollection
+        .doc(groupId)
+        .collection('AmountDetails')
+        .doc(getId(senterId))
+        .update({'amount': FieldValue.increment(double.parse(amount))});
     DocumentReference messageReference =
         await groupCollection.doc(groupId).collection('messages').add({
       'amount': amount,
