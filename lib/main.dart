@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/screen/LoginScreen.dart';
 import 'package:trans_pay/screen/SignUpScreen.dart';
-import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
 import 'package:trans_pay/screen/chatScreen/chatScreen.dart';
 import 'package:trans_pay/screen/homeScreen.dart';
 import 'package:trans_pay/screen/profileScreen.dart';
@@ -48,7 +47,6 @@ class MyApp extends StatelessWidget {
             '/signUp': (context) => SignUpPage(),
             '/homeScreen': (context) => HomeScreen(),
             '/profileScreen': (context) => ProfileScreen(),
-            '/chatScreen': (context) => ChatScreen(),
             '/searchScreen': (context) => SearchScreen(),
           },
           debugShowCheckedModeBanner: false),

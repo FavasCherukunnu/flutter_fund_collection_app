@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:trans_pay/helper/helper_function.dart';
+import 'package:trans_pay/screen/chatScreen/chatScreen.dart';
 
 import '../constants/common.dart';
 
@@ -25,9 +27,15 @@ class GroupTile extends StatelessWidget {
           ),
         ),
         title: transText(text: groupName, size: 17),
-        onTap: () {
-          Navigator.pushNamed(context, '/chatScreen',
-              arguments: {'groupName': groupName, 'groupId': groupId});
+        onTap: () async {
+          String? userId = await HelperFunctions.getUserIdFromSF();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                      groupName: groupName,
+                      groupId: groupId,
+                      userId: userId!)));
         },
       ),
     );

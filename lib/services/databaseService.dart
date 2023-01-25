@@ -84,4 +84,33 @@ class DatabaseService {
       'groups': FieldValue.arrayRemove(['${groupId}_$groupName'])
     });
   }
+
+  sentMessage(String groupId, String amount, String senterId, DateTime time,
+      {String message = ""}) async {
+    DocumentReference messageReference =
+        await groupCollection.doc(groupId).collection('messages').add({
+      'amount': amount,
+      'message': message,
+      'senterId': senterId,
+      'time': time.millisecondsSinceEpoch,
+      'messegeId': ''
+    });
+    await groupCollection
+        .doc(groupId)
+        .collection('messages')
+        .doc(messageReference.id)
+        .update({'messageId': messageReference.id});
+    await groupCollection
+        .doc(groupId)
+        .update({'recentMessage': amount, 'recentMessageSender': senterId});
+  }
+
+  //get messages from group
+  Future getChats(String groupId) async {
+    return groupCollection
+        .doc(groupId)
+        .collection("messages")
+        .orderBy("time")
+        .snapshots();
+  }
 }

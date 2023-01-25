@@ -3,12 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
+import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
+import 'package:trans_pay/services/databaseService.dart';
+import 'package:trans_pay/widget/messageTile.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  ChatScreen(
+      {super.key,
+      required this.groupName,
+      required this.groupId,
+      required this.userId});
+
+  String groupName;
+  String groupId;
+  String userId;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -16,17 +27,29 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   TextEditingController amountDetails = TextEditingController();
-  late String groupName;
-  late String groupId;
+  String? userName;
+  ScrollController listViewController = ScrollController();
+  Stream? messages;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getMessages();
+  }
+
+  getMessages() async {
+    messages = await DatabaseService()
+        .groupCollection
+        .doc(widget.groupId)
+        .collection('messages')
+        .orderBy("time", descending: true)
+        .snapshots();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final arguments = ModalRoute.of(context)!.settings.arguments as Map;
-
-    groupName = arguments['groupName'];
-    groupId = arguments['groupId'];
-    ScrollController listViewController = ScrollController();
-
     return Scaffold(
         backgroundColor: primaryBgColor,
         appBar: AppBar(
@@ -35,131 +58,133 @@ class _ChatScreenState extends State<ChatScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GestureDetector(
-                child: transText(text: groupName),
+                child: transText(text: widget.groupName),
                 onTap: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => ChatDetailsScreen(
-                                groupId: groupId,
+                                groupId: widget.groupId,
                               )));
                 },
               ),
             ],
           ),
         ),
-        body: Container()
-        // Column(
-        //   children: [
-        //     Flexible(
-        //       child: ListView.builder(
-        //         itemBuilder: (context, index) {
-        //           return buildItem(userclass
-        //               .groups[indexofChat].message.reversed
-        //               .toList()[index]);
-        //         },
-        //         itemCount: userclass.groups[indexofChat].message.length,
-        //         reverse: true,
-        //         controller: listViewController,
-        //       ),
-        //     ),
-        //     Container(
-        //       padding: EdgeInsets.fromLTRB(20, 5, 10, 5),
-        //       child: Row(
-        //         children: [
-        //           Flexible(
-        //             child: Container(
-        //               child: TextField(
-        //                 keyboardType: TextInputType.number,
-        //                 controller: amountDetails,
-        //                 // onSubmitted: (value) {
-
-        //                 // },
-        //                 style: const TextStyle(
-        //                   fontFamily: 'SofiSans',
-        //                   letterSpacing: 1,
-        //                 ),
-        //                 //controller: ,
-        //                 decoration: const InputDecoration.collapsed(
-        //                   hintText: 'Enter Amount',
-        //                   hintStyle: TextStyle(
-        //                     fontFamily: 'SofiSans',
-        //                     letterSpacing: 1,
-        //                   ),
-        //                 ),
-        //                 //focusNode: focusNode,
-        //                 autofocus: false,
-        //               ),
-        //             ),
-        //           ),
-        //           Material(
-        //             //color: Colors.white,
-        //             child: Container(
-        //               margin: EdgeInsets.symmetric(horizontal: 8),
-        //               child: IconButton(
-        //                 icon: Icon(Icons.send),
-        //                 onPressed: () {
-        //                   final String amount = amountDetails.text;
-        //                   FocusScopeNode currentFocus =
-        //                       FocusScope.of(context);
-        //                   //got to bottom of listview
-        //                   listViewController.animateTo(
-        //                       listViewController.position.minScrollExtent,
-        //                       duration: Duration(milliseconds: 500),
-        //                       curve: Curves.easeOut);
-        //                   if (amount.isNotEmpty) {
-        //                     if (!currentFocus.hasPrimaryFocus) {
-        //                       currentFocus.unfocus();
-        //                     }
-        //                     amountDetails.clear();
-        //                     userclass.addmsg(
-        //                         msg: amount,
-        //                         index: indexofChat,
-        //                         senterId: senterId);
-        //                   }
-        //                 },
-        //                 color: primaryColor,
-        //                 tooltip: 'pay',
-        //               ),
-        //             ),
-        //           ),
-        //         ],
-        //       ),
-        //     )
-        //   ],
-        // )
-        );
+        body: chatSection());
   }
 
-  Widget buildItem(Messages messages) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 10, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Container(
-            padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-            width: 200,
-            decoration: BoxDecoration(
-                color: chatColor, borderRadius: BorderRadius.circular(8)),
-            //margin:const  EdgeInsets.only(bottom: 10, right: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: transText(
-                          text: messages.amount, size: 20, color: Colors.white),
-                    )
-                  ],
+  sentMessage(String amount) async {
+    String? userName = await HelperFunctions.getUserNameFromSF();
+    String senterId = '${widget.userId}_$userName';
+    await DatabaseService()
+        .sentMessage(widget.groupId, amount, senterId, DateTime.now());
+  }
+
+  getId(String data) {
+    return data.substring(0, data.indexOf('_'));
+  }
+
+  getName(String data) {
+    return data.substring(data.indexOf('_') + 1);
+  }
+
+  checkSenter(String senterId) {
+    String realUserId = getId(senterId);
+    if (realUserId == widget.userId) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Column chatSection() {
+    return Column(
+      children: [
+        Flexible(
+          child: StreamBuilder(
+            stream: messages,
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                final data = snapshot.data.docs;
+
+                return ListView.builder(
+                  itemBuilder: (context, index) {
+                    return MessageTile(
+                      amount: data[index]['amount'],
+                      isSenter: checkSenter(data[index]['senterId']),
+                      time: data[index]['time'],
+                      senderName: getName(data[index]['senterId']),
+                    );
+                  },
+                  itemCount: data.length,
+                  reverse: true,
+                  controller: listViewController,
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.fromLTRB(5, 10, 5, 5),
+          padding: const EdgeInsets.fromLTRB(15, 5, 5, 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+            color: Colors.white,
+          ),
+          child: Row(
+            children: [
+              Flexible(
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  controller: amountDetails,
+                  // onSubmitted: (value) {
+
+                  // },
+                  style: const TextStyle(
+                    fontFamily: 'SofiSans',
+                    letterSpacing: 1,
+                  ),
+                  //controller: ,
+                  decoration: const InputDecoration.collapsed(
+                    hintText: 'Enter Amount',
+                    hintStyle: TextStyle(
+                      fontFamily: 'SofiSans',
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  //focusNode: focusNode,
+                  autofocus: false,
                 ),
-                transText(text: messages.formattedTime, color: Colors.white)
-              ],
-            ),
-          )
-        ],
-      ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: () async {
+                  final String amount = amountDetails.text;
+                  FocusScopeNode currentFocus = FocusScope.of(context);
+                  //got to bottom of listview
+
+                  if (amount.isNotEmpty) {
+                    await sentMessage(amount);
+                    if (!currentFocus.hasPrimaryFocus) {
+                      currentFocus.unfocus();
+                    }
+                    amountDetails.clear();
+                  }
+                  // listViewController.animateTo(
+                  //     listViewController.position.minScrollExtent,
+                  //     duration: const Duration(milliseconds: 500),
+                  //     curve: Curves.easeOut);
+                },
+                color: primaryColor,
+                tooltip: 'pay',
+              ),
+            ],
+          ),
+        )
+      ],
     );
   }
 }
