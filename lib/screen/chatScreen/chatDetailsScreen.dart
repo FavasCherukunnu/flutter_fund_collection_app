@@ -22,6 +22,8 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   late int indexOfGroup;
 
   Stream? groupInfo;
+  bool _isTotalAmountLoaded = false;
+  late double totalAmount;
 
   @override
   void initState() {
@@ -29,6 +31,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     super.initState();
 
     groupInfo = DatabaseService().getGroupInfo(widget.groupId);
+    DatabaseService().getGroupTotalAount(widget.groupId).then((value) {
+      totalAmount = value;
+      setState(() {
+        _isTotalAmountLoaded = true;
+      });
+    });
     // final totalAmount = DatabaseService().getTotalAmountInfo(widget.groupId);
   }
 
@@ -102,8 +110,8 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 5),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -116,6 +124,25 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                   text: getName(admin),
                                   color: Colors.white,
                                   size: 15)
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              transText(
+                                  text: 'TOTAL AMOUNT: ',
+                                  color: Colors.white,
+                                  size: 15,
+                                  bold: true),
+                              transText(
+                                  text: _isTotalAmountLoaded
+                                      ? totalAmount.toString()
+                                      : 'loading',
+                                  color: Colors.white,
+                                  size: 16)
                             ],
                           ),
                         )
@@ -165,7 +192,6 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                               snapshot) {
                                         if (snapshot.hasData) {
                                           final doc = snapshot.data!.docs[0];
-                                          print(doc['amount']);
                                           return transText(
                                               text: doc['amount'].toString());
                                         } else {

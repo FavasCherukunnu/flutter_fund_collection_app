@@ -25,7 +25,7 @@ class DatabaseService {
 
   //retrieve user data
   Future gettingUserData(String email) async {
-    final QuerySnapshot? snapshot =
+    QuerySnapshot? snapshot =
         await userCollection.where("email", isEqualTo: email).get();
     return snapshot;
   }
@@ -71,6 +71,19 @@ class DatabaseService {
         .collection('AmountDetails')
         .where('memberId', isEqualTo: memberIdN)
         .snapshots();
+  }
+
+// get total amount transacted in group
+  Future getGroupTotalAount(String groupId) async {
+    double totalAmount = 0;
+    final collection =
+        await groupCollection.doc(groupId).collection('AmountDetails').get();
+
+    collection.docs.forEach((element) {
+      final map = element.data();
+      totalAmount = totalAmount + map['amount'];
+    });
+    return totalAmount;
   }
 
   gpSearchByName(String groupName) {
