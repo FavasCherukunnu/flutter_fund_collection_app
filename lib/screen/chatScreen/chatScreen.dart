@@ -166,7 +166,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   FocusScopeNode currentFocus = FocusScope.of(context);
                   //got to bottom of listview
 
-                  if (amount.isNotEmpty && isNumeric(amount)) {
+                  if (amount.isNotEmpty && isNumeric(amount) && int.parse(amount)>=0) {
                     if (!currentFocus.hasPrimaryFocus) {
                       currentFocus.unfocus();
                     }
