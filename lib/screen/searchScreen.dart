@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +26,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isJoined = false;
   String? username;
   String? uid;
+  StreamController<bool> searchMenuCtrl = StreamController<bool>();
 
   @override
   void initState() {
@@ -64,6 +67,14 @@ class _SearchScreenState extends State<SearchScreen> {
                       hintText: 'Search...',
                       hintStyle: TextStyle(color: Colors.white)),
                   cursorColor: Colors.white,
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      searchMenuCtrl.add(true);
+                      setState(() {});
+                    } else {
+                      searchMenuCtrl.add(false);
+                    }
+                  },
                 )),
                 IconButton(
                     onPressed: () {
@@ -72,7 +83,26 @@ class _SearchScreenState extends State<SearchScreen> {
                     icon: const Icon(
                       Icons.search,
                       color: Colors.white,
-                    ))
+                    )),
+                StreamBuilder(
+                  stream: searchMenuCtrl.stream,
+                  builder: (context, snapshot) {
+                    if (snapshot.data == true) {
+                      return IconButton(
+                          onPressed: () {
+                            groupCtrl.clear();
+                            searchMenuCtrl.add(false);
+                            setState(() {});
+                          },
+                          icon: Icon(
+                            Icons.clear_rounded,
+                            color: Colors.white,
+                          ));
+                    } else {
+                      return SizedBox();
+                    }
+                  },
+                ),
               ],
             ),
           ),
