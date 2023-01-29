@@ -30,7 +30,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     // TODO: implement initState
     super.initState();
 
-    groupInfo = DatabaseService().getGroupInfo(widget.groupId);
+    groupInfo = DatabaseService().getGroupInfoStream(widget.groupId);
     DatabaseService().getGroupTotalAount(widget.groupId).then((value) {
       totalAmount = value;
       setState(() {

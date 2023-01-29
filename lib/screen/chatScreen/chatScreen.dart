@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -7,6 +9,7 @@ import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
+import 'package:trans_pay/services/authentication.dart';
 import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/widget/messageTile.dart';
 
@@ -30,6 +33,8 @@ class _ChatScreenState extends State<ChatScreen> {
   String? userName;
   ScrollController listViewController = ScrollController();
   Stream? messages;
+  DocumentSnapshot? groupDetails;
+  bool _isChatLoaded = false;
 
   @override
   void initState() {
@@ -38,14 +43,19 @@ class _ChatScreenState extends State<ChatScreen> {
     getMessages();
   }
 
-  getMessages() async {
+  Future getMessages() async {
+    //getting group details
+    groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
+
     messages = await DatabaseService()
         .groupCollection
         .doc(widget.groupId)
         .collection('messages')
         .orderBy("time", descending: true)
         .snapshots();
-    setState(() {});
+    setState(() {
+      _isChatLoaded = true;
+    });
   }
 
   @override
@@ -75,10 +85,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   sentMessage(String amount) async {
+    final groupInfo = groupDetails!.data() as Map;
     String? userName = await HelperFunctions.getUserNameFromSF();
     String senterId = '${widget.userId}_$userName';
-    await DatabaseService()
-        .sentMessage(widget.groupId, amount, senterId, DateTime.now());
+    await DatabaseService().sentMessage(widget.groupName, widget.groupId,
+        amount, senterId, DateTime.now(), getId(groupInfo['admin']));
   }
 
   getId(String data) {
@@ -102,88 +113,94 @@ class _ChatScreenState extends State<ChatScreen> {
     return Column(
       children: [
         Flexible(
-          child: StreamBuilder(
-            stream: messages,
-            builder: (context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
-                final data = snapshot.data.docs;
+          child: _isChatLoaded
+              ? StreamBuilder(
+                  stream: messages,
+                  builder: (context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData) {
+                      final data = snapshot.data.docs;
 
-                return ListView.builder(
-                  itemBuilder: (context, index) {
-                    return MessageTile(
-                      amount: data[index]['amount'],
-                      isSenter: checkSenter(data[index]['senterId']),
-                      time: data[index]['time'],
-                      senderName: getName(data[index]['senterId']),
-                    );
-                  },
-                  itemCount: data.length,
-                  reverse: true,
-                  controller: listViewController,
-                );
-              } else {
-                return Container();
-              }
-            },
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.fromLTRB(5, 10, 5, 5),
-          padding: const EdgeInsets.fromLTRB(15, 5, 5, 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(20)),
-            color: Colors.white,
-          ),
-          child: Row(
-            children: [
-              Flexible(
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  controller: amountDetails,
-                  // onSubmitted: (value) {
-
-                  // },
-                  style: const TextStyle(
-                    fontFamily: 'SofiSans',
-                    letterSpacing: 1,
-                  ),
-                  //controller: ,
-                  decoration: const InputDecoration.collapsed(
-                    hintText: 'Enter Amount',
-                    hintStyle: TextStyle(
-                      fontFamily: 'SofiSans',
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  //focusNode: focusNode,
-                  autofocus: false,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: () async {
-                  final String amount = amountDetails.text;
-                  FocusScopeNode currentFocus = FocusScope.of(context);
-                  //got to bottom of listview
-
-                  if (amount.isNotEmpty && isNumeric(amount) && int.parse(amount)>=0) {
-                    if (!currentFocus.hasPrimaryFocus) {
-                      currentFocus.unfocus();
+                      return ListView.builder(
+                        itemBuilder: (context, index) {
+                          return MessageTile(
+                            amount: data[index]['amount'],
+                            isSenter: checkSenter(data[index]['senterId']),
+                            time: data[index]['time'],
+                            senderName: getName(data[index]['senterId']),
+                          );
+                        },
+                        itemCount: data.length,
+                        reverse: true,
+                        controller: listViewController,
+                      );
+                    } else {
+                      return const CircularProgressIndicator();
                     }
-                    amountDetails.clear();
-                    await sentMessage(amount);
-                  }
-                  // listViewController.animateTo(
-                  //     listViewController.position.minScrollExtent,
-                  //     duration: const Duration(milliseconds: 500),
-                  //     curve: Curves.easeOut);
-                },
-                color: primaryColor,
-                tooltip: 'pay',
-              ),
-            ],
-          ),
-        )
+                  },
+                )
+              : const CircularProgressIndicator(),
+        ),
+        _isChatLoaded
+            ? Container(
+                margin: const EdgeInsets.fromLTRB(5, 10, 5, 5),
+                padding: const EdgeInsets.fromLTRB(15, 5, 5, 5),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  color: Colors.white,
+                ),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        controller: amountDetails,
+                        // onSubmitted: (value) {
+
+                        // },
+                        style: const TextStyle(
+                          fontFamily: 'SofiSans',
+                          letterSpacing: 1,
+                        ),
+                        //controller: ,
+                        decoration: const InputDecoration.collapsed(
+                          hintText: 'Enter Amount',
+                          hintStyle: TextStyle(
+                            fontFamily: 'SofiSans',
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        //focusNode: focusNode,
+                        autofocus: false,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: () async {
+                        final String amount = amountDetails.text;
+                        FocusScopeNode currentFocus = FocusScope.of(context);
+                        //got to bottom of listview
+
+                        if (amount.isNotEmpty &&
+                            isNumeric(amount) &&
+                            int.parse(amount) >= 0) {
+                          if (!currentFocus.hasPrimaryFocus) {
+                            currentFocus.unfocus();
+                          }
+                          amountDetails.clear();
+                          await sentMessage(amount);
+                        }
+                        // listViewController.animateTo(
+                        //     listViewController.position.minScrollExtent,
+                        //     duration: const Duration(milliseconds: 500),
+                        //     curve: Curves.easeOut);
+                      },
+                      color: primaryColor,
+                      tooltip: 'pay',
+                    ),
+                  ],
+                ),
+              )
+            : Container()
       ],
     );
   }

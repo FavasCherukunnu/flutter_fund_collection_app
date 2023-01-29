@@ -1,5 +1,6 @@
 class AppConstants {
   static const String homeTitle = 'Dashbord';
+  static const String transactionTitle = 'Transactions';
 }
 
 class Constants {

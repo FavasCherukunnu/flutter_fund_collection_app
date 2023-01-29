@@ -60,7 +60,13 @@ class DatabaseService {
     });
   }
 
-  getGroupInfo(String groupId) {
+  getGroupInfo(String groupId) async {
+    return await groupCollection.doc(groupId).get();
+  }
+
+  getGroupInfoStream(
+    String groupId,
+  ) {
     return groupCollection.doc(groupId).snapshots();
   }
 
@@ -120,13 +126,15 @@ class DatabaseService {
     });
   }
 
-  sentMessage(String groupId, String amount, String senterId, DateTime time,
+  sentMessage(String groupName, String groupId, String amount, String senterId,
+      DateTime time, String AdminId,
       {String message = ""}) async {
     await groupCollection
         .doc(groupId)
         .collection('AmountDetails')
         .doc(getId(senterId))
         .update({'amount': FieldValue.increment(double.parse(amount))});
+
     DocumentReference messageReference =
         await groupCollection.doc(groupId).collection('messages').add({
       'amount': amount,
@@ -140,6 +148,39 @@ class DatabaseService {
         .collection('messages')
         .doc(messageReference.id)
         .update({'messageId': messageReference.id});
+
+//check admin is paying his own group
+    if (AdminId == getId(senterId)) {
+      await userCollection.doc(getId(senterId)).collection('transaction').add({
+        'groupId': '${groupId}_$groupName',
+        'amount': amount,
+        'time': time.millisecondsSinceEpoch,
+        'messageId': messageReference.id,
+        'senterId': senterId,
+        'isAdmin': true,
+        'isRecieve': false,
+      });
+    } else {
+      await userCollection.doc(getId(senterId)).collection('transaction').add({
+        'groupId': '${groupId}_$groupName',
+        'amount': amount,
+        'time': time.millisecondsSinceEpoch,
+        'messageId': messageReference.id,
+        'senterId': senterId,
+        'isAdmin': false,
+        'isRecieve': false,
+      });
+      await userCollection.doc(AdminId).collection('transaction').add({
+        'groupId': '${groupId}_$groupName',
+        'amount': amount,
+        'time': time.millisecondsSinceEpoch,
+        'messageId': messageReference.id,
+        'senterId': senterId,
+        'isAdmin': false,
+        'isRecieve': true
+      });
+    }
+
     await groupCollection
         .doc(groupId)
         .update({'recentMessage': amount, 'recentMessageSender': senterId});
@@ -151,6 +192,15 @@ class DatabaseService {
         .doc(groupId)
         .collection("messages")
         .orderBy("time")
+        .snapshots();
+  }
+
+  //get transaction details of given user user
+  getTransaction(String userId) {
+    return userCollection
+        .doc(userId)
+        .collection('transaction')
+        .orderBy('time')
         .snapshots();
   }
 }

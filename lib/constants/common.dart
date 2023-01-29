@@ -6,7 +6,11 @@ const senterChatColor = Color.fromARGB(255, 82, 52, 134);
 const recieverChatColor = Color.fromARGB(255, 150, 126, 190);
 
 Widget transText(
-    {required String text, double size = 0, Color? color, bool bold = false}) {
+    {required String text,
+    double size = 0,
+    Color? color,
+    bool bold = false,
+    TextOverflow? overflow}) {
   return Text(
     text,
     style: TextStyle(
@@ -14,7 +18,8 @@ Widget transText(
         fontFamily: 'SofiSans',
         letterSpacing: 1,
         fontSize: size != 0 ? size : null,
-        fontWeight: bold ? FontWeight.bold : null),
+        fontWeight: bold ? FontWeight.bold : null,
+        overflow: overflow),
   );
 }
 

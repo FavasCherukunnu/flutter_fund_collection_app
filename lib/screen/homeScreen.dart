@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import 'package:trans_pay/models/popUpChoices.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/services/authentication.dart';
+import 'package:trans_pay/widget/transactionTile.dart';
 
 import '../services/databaseService.dart';
 import '../widget/groupTIle.dart';
@@ -49,13 +51,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: primaryBgColor,
       appBar: AppBar(
-        title: transText(text: AppConstants.homeTitle),
+        title: _bottomNavValue == 0
+            ? transText(text: AppConstants.homeTitle)
+            : transText(text: AppConstants.transactionTitle),
         actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/searchScreen');
-              },
-              icon: Icon(Icons.search)),
+          _bottomNavValue == 0
+              ? IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/searchScreen');
+                  },
+                  icon: Icon(Icons.search))
+              : Container(),
           buildPopUpMenu(),
         ],
         elevation: 0,
@@ -78,13 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'transactions', icon: Icon(Icons.balance))
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          addGroup();
-        },
-        tooltip: 'Create Group',
-      ),
+      floatingActionButton: _bottomNavValue == 0
+          ? FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () {
+                addGroup();
+              },
+              tooltip: 'Create Group',
+            )
+          : null,
     );
   }
 
@@ -339,6 +347,46 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  buildTransaction() {
+    Stream<QuerySnapshot>? transaction = DatabaseService()
+        .getTransaction(FirebaseAuth.instance.currentUser!.uid);
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      child: StreamBuilder(
+        stream: transaction,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            //if transaction has happened
+            if (snapshot.data!.docs.length != 0) {
+              final transactionData = snapshot.data!.docs;
+              return ListView.builder(
+                reverse: true,
+                itemBuilder: (context, index) {
+                  return TransactionTile(
+                      transactionData: transactionData[index]);
+                },
+                itemCount: transactionData.length,
+              );
+            } else {
+              return Center(
+                child: transText(text: 'No transaction'),
+              );
+            }
+          } else if (snapshot.hasError) {
+            return Center(
+              child: transText(text: 'Network error'),
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+    );
+  }
+
   Widget _buildScreen() {
     switch (_bottomNavValue) {
       case 0:
@@ -346,8 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         break;
       case 1:
-        return Center(
-            child: transText(text: 'This is transaction page', size: 17));
+        return buildTransaction();
         break;
       default:
         return Container();
