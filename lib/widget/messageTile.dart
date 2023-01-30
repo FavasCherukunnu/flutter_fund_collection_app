@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:trans_pay/constants/appConstants.dart';
 
 import '../constants/common.dart';
 import '../models/userDetails.dart';
@@ -11,7 +12,9 @@ class MessageTile extends StatelessWidget {
       required this.isSenter,
       required this.time,
       required this.senderName,
-      required this.isAdmin})
+      required this.isAdmin,
+      required this.groupType,
+      required this.isWithdraw})
       : super(key: key);
 
   String amount;
@@ -19,6 +22,8 @@ class MessageTile extends StatelessWidget {
   int time;
   String senderName;
   bool isAdmin;
+  int groupType;
+  bool isWithdraw;
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +45,8 @@ class MessageTile extends StatelessWidget {
                 ? const EdgeInsets.fromLTRB(20, 10, 5, 0)
                 : const EdgeInsets.fromLTRB(5, 10, 10, 0),
             decoration: BoxDecoration(
-                color: isAdmin
-                    ? adminWithdrawColor
+                color: isWithdraw
+                    ? depositColor
                     : isSenter
                         ? senterChatColor
                         : recieverChatColor,

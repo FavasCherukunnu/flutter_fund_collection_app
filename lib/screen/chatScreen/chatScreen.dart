@@ -83,12 +83,13 @@ class _ChatScreenState extends State<ChatScreen> {
         body: chatSection());
   }
 
-  sentMessage(String amount) async {
+  sentMessage(String amount, bool isWithdraw) async {
     final groupInfo = groupDetails!.data() as Map;
     String? userName = await HelperFunctions.getUserNameFromSF();
     String senterIdN = '${widget.userId}_$userName';
     await DatabaseService().sentMessage(widget.groupName, widget.groupId,
-        amount, senterIdN, DateTime.now(), getId(groupInfo['admin']));
+        amount, senterIdN, DateTime.now(), getId(groupInfo['admin']),
+        isWithdraw: isWithdraw);
   }
 
   getId(String data) {
@@ -126,13 +127,34 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget buildUserSentButton(){
+  Widget buildUserSentButton() {
     return TextButton(
-        child: transText(text: 'Pay'),
+      child: transText(text: 'Pay'),
+      onPressed: () async {
+        final String amount = amountDetails.text;
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        //got to bottom of listview
+
+        if (amount.isNotEmpty && isNumeric(amount) && int.parse(amount) >= 0) {
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+          amountDetails.clear();
+          await sentMessage(amount, false);
+        }
+        // listViewController.animateTo(
+        //     listViewController.position.minScrollExtent,
+        //     duration: const Duration(milliseconds: 500),
+        //     curve: Curves.easeOut);
+      },
+    );
+  }
+
+  Widget buildAdminWithrawalbutton() {
+    return TextButton(
         onPressed: () async {
           final String amount = amountDetails.text;
-          FocusScopeNode currentFocus =
-              FocusScope.of(context);
+          FocusScopeNode currentFocus = FocusScope.of(context);
           //got to bottom of listview
 
           if (amount.isNotEmpty &&
@@ -142,39 +164,13 @@ class _ChatScreenState extends State<ChatScreen> {
               currentFocus.unfocus();
             }
             amountDetails.clear();
-            await sentMessage(amount);
+            await sentMessage(amount, true);
           }
-          // listViewController.animateTo(
-          //     listViewController.position.minScrollExtent,
-          //     duration: const Duration(milliseconds: 500),
-          //     curve: Curves.easeOut);
         },
-      );
+        child: transText(text: 'withdraw'));
   }
 
-  Widget buildAdminWithrawalbutton(){
-      return TextButton(
-          onPressed: () async {
-            final String amount = amountDetails.text;
-            FocusScopeNode currentFocus =
-                FocusScope.of(context);
-            //got to bottom of listview
-
-            if (amount.isNotEmpty &&
-                isNumeric(amount) &&
-                int.parse(amount) >= 0) {
-              if (!currentFocus.hasPrimaryFocus) {
-                currentFocus.unfocus();
-              }
-              amountDetails.clear();
-              await sentMessage(amount);
-            }
-          },
-          child: transText(text: 'withdraw'));
-
-  }
-
-  Widget buildUserSentAndWithrawalButton(){
+  Widget buildUserSentAndWithrawalButton() {
     return Row(
       children: [
         buildAdminWithrawalbutton(),
@@ -183,18 +179,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  buildbottombutton(){
+  buildbottombutton() {
     print(isAdmin());
-    if(isAdmin()){
-      if(groupType.getGroupType == GroupType.memberWithdrawal){
+    if (isAdmin()) {
+      if (groupType.getGroupType == GroupType.memberWithdrawal) {
         return buildUserSentAndWithrawalButton();
-      }else if(groupType.getGroupType == GroupType.memberNonWithdrawal){
+      } else if (groupType.getGroupType == GroupType.memberNonWithdrawal) {
         return buildAdminWithrawalbutton();
       }
-    }else{
-      if(groupType.getGroupType==GroupType.memberWithdrawal){
+    } else {
+      if (groupType.getGroupType == GroupType.memberWithdrawal) {
         return buildUserSentAndWithrawalButton();
-      }else{
+      } else {
         return buildUserSentButton();
       }
     }
@@ -216,13 +212,14 @@ class _ChatScreenState extends State<ChatScreen> {
                       return ListView.builder(
                         itemBuilder: (context, index) {
                           return MessageTile(
-                            amount: data[index]['amount'],
-                            isSenter: checkSenter(data[index]['senterId']),
-                            time: data[index]['time'],
-                            senderName: getName(data[index]['senterId']),
-                            isAdmin:
-                                isAdmin(senterIDN: data[index]['senterId']),
-                          );
+                              amount: data[index]['amount'],
+                              isSenter: checkSenter(data[index]['senterId']),
+                              time: data[index]['time'],
+                              senderName: getName(data[index]['senterId']),
+                              isAdmin:
+                                  isAdmin(senterIDN: data[index]['senterId']),
+                              groupType: groupType.getGroupType,
+                              isWithdraw: data[index]['isWithdraw']);
                         },
                         itemCount: data.length,
                         reverse: true,
@@ -269,7 +266,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                     buildbottombutton()
-                    
                   ],
                 ),
               )

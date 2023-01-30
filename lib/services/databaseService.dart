@@ -35,13 +35,14 @@ class DatabaseService {
   }
 
   // creating a group
-  Future createGroup(String userName, String id, String groupName,int grouptype) async {
+  Future createGroup(
+      String userName, String id, String groupName, int grouptype) async {
     DocumentReference groupDocumentReference = await groupCollection.add({
       "groupName": groupName,
       "groupIcon": "",
       "admin": "${id}_$userName",
       "members": [],
-      'groupType':grouptype,
+      'groupType': grouptype,
       "groupId": "",
       "recentMessage": "",
       "recentMessageSender": "",
@@ -103,7 +104,11 @@ class DatabaseService {
         .doc(groupId)
         .collection('AmountDetails')
         .doc(getId(senterIdN))
-        .set({'depositAmount': amount, 'memberId': senterIdN,'withdrawAmount':0});
+        .set({
+      'depositAmount': amount,
+      'memberId': senterIdN,
+      'withdrawAmount': 0
+    });
   }
 
   joinGroup(
@@ -129,7 +134,7 @@ class DatabaseService {
 
   sentMessage(String groupName, String groupId, String amount, String senterIdN,
       DateTime time, String AdminId,
-      {String message = ""}) async {
+      {String message = "", required bool isWithdraw}) async {
     if (AdminId == getId(senterIdN)) {
       await groupCollection
           .doc(groupId)
@@ -154,7 +159,8 @@ class DatabaseService {
       'message': message,
       'senterId': senterIdN,
       'time': time.millisecondsSinceEpoch,
-      'messegeId': ''
+      'isWithdraw': isWithdraw,
+      'messageId': ''
     });
     await groupCollection
         .doc(groupId)
@@ -171,7 +177,7 @@ class DatabaseService {
         'messageId': messageReference.id,
         'senterId': senterIdN,
         'isAdmin': true,
-        'isRecieve': false,
+        'isWithdraw': isWithdraw
       });
     } else {
       await userCollection.doc(getId(senterIdN)).collection('transaction').add({
@@ -181,7 +187,7 @@ class DatabaseService {
         'messageId': messageReference.id,
         'senterId': senterIdN,
         'isAdmin': false,
-        'isRecieve': false,
+        'isWithdraw': isWithdraw
       });
       await userCollection.doc(AdminId).collection('transaction').add({
         'groupId': '${groupId}_$groupName',
@@ -190,7 +196,7 @@ class DatabaseService {
         'messageId': messageReference.id,
         'senterId': senterIdN,
         'isAdmin': false,
-        'isRecieve': true
+        'isWithdraw': isWithdraw
       });
     }
 
@@ -213,7 +219,7 @@ class DatabaseService {
     return userCollection
         .doc(userId)
         .collection('transaction')
-        .orderBy('time')
+        .orderBy('time', descending: true)
         .snapshots();
   }
 }

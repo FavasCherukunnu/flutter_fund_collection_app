@@ -35,8 +35,12 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     HelperFunctions.getUserLoggedInStatus().then((value) {
       if (value == true) {
-        Navigator.pushReplacementNamed(context, '/homeScreen');
+        getUserData().whenComplete(() {
+          Navigator.pushReplacementNamed(context, '/homeScreen');
+        });
       }
+    });
+    Future.delayed(Duration(seconds: 1)).whenComplete(() {
       setState(() {
         _loginCheking = false;
       });
@@ -61,6 +65,8 @@ class _LoginPageState extends State<LoginPage> {
         await HelperFunctions.saveUserLoggedInStatus(true);
         await HelperFunctions.saveUserIdSF('${_auth.uid}');
 
+        await getUserData();
+
         Navigator.pushReplacementNamed(context, '/homeScreen');
       } else {
         setState(() {
@@ -69,6 +75,10 @@ class _LoginPageState extends State<LoginPage> {
         showSnackbar(context, Colors.red, value.toString());
       }
     });
+  }
+
+  Future getUserData() async {
+    HelperFunctions.userId = await HelperFunctions.getUserIdFromSF();
   }
 
   @override

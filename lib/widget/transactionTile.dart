@@ -7,16 +7,21 @@ import 'package:intl/intl.dart';
 import '../constants/common.dart';
 
 class TransactionTile extends StatelessWidget {
-  TransactionTile({super.key, required this.transactionData});
+  TransactionTile(
+      {super.key, required this.transactionData, required this.userId});
 
   QueryDocumentSnapshot transactionData;
-  bool _isRecieve = false;
+  bool _isWithdraw = false;
   bool _isAdmin = false;
+  String userId;
+  bool own = false;
 
   @override
   Widget build(BuildContext context) {
-    _isRecieve = transactionData['isRecieve'];
+    _isWithdraw = transactionData['isWithdraw'];
     _isAdmin = transactionData['isAdmin'];
+    String senterIdN = transactionData['senterId'];
+    own = userId == getId(senterIdN);
 
     DateTime dateTime =
         DateTime.fromMillisecondsSinceEpoch(transactionData['time']);
@@ -25,7 +30,7 @@ class TransactionTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
-        isThreeLine: !_isRecieve ? false : true,
+        isThreeLine: own ? false : true,
         horizontalTitleGap: 30,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -33,8 +38,8 @@ class TransactionTile extends StatelessWidget {
         selectedTileColor: Colors.white,
         selected: true,
         title: transText(
-            text: _isRecieve ? 'Recieved From' : 'Paid To',
-            color: _isRecieve ? credittedColour : adminWithdrawColor,
+            text: _isWithdraw ? 'Withdrew From' : 'Paid To',
+            color: getThemeColor(),
             size: 15),
         onTap: () {},
         subtitle: Column(
@@ -46,7 +51,7 @@ class TransactionTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 bold: true,
                 size: 20),
-            !_isRecieve
+            own
                 ? Container()
                 : transText(
                     text: '${getName(transactionData['senterId'])}',
@@ -58,7 +63,7 @@ class TransactionTile extends StatelessWidget {
             Expanded(
               child: transText(
                   text: '${transactionData['amount']}',
-                  color: _isRecieve ? credittedColour : adminWithdrawColor,
+                  color: getThemeColor(),
                   size: 25),
             ),
             transText(text: formattedTime, color: Colors.black),
@@ -67,4 +72,12 @@ class TransactionTile extends StatelessWidget {
       ),
     );
   }
+
+  getThemeColor() => _isWithdraw
+      ? own
+          ? credittedColor
+          : depositColor
+      : own
+          ? depositColor
+          : credittedColor;
 }

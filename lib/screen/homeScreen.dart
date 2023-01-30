@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   String groupName = "";
 
-
   //bottom navigation index
   int _bottomNavValue = 0;
   AuthService authService = AuthService();
@@ -45,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     gettingUserData();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -128,112 +125,126 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context,setState) {
-            return SimpleDialog(
-              clipBehavior: Clip.hardEdge,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Center(
-                          child: Text(
-                            'Add Group',
-                            style: TextStyle(
-                              fontFamily: 'SofiSans',
-                              fontSize: 20,
-                              letterSpacing: 1,
-                              fontWeight: FontWeight.bold,
-                            ),
+        return StatefulBuilder(builder: (context, setState) {
+          return SimpleDialog(
+            clipBehavior: Clip.hardEdge,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Center(
+                        child: Text(
+                          'Add Group',
+                          style: TextStyle(
+                            fontFamily: 'SofiSans',
+                            fontSize: 20,
+                            letterSpacing: 1,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(
-                          height: 50,
+                      ),
+                      const SizedBox(
+                        height: 50,
+                      ),
+                      transText(text: 'Group name', bold: true, size: 17),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextFormField(
+                        controller: groupName,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter group name';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          //border: OutlineInputBorder(),
+                          hintText: 'Enter group name',
+                          prefixIcon: Icon(Icons.group),
                         ),
-                        transText(text: 'Group name', bold: true, size: 17),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextFormField(
-                          controller: groupName,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter group name';
-                            }
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            //border: OutlineInputBorder(),
-                            hintText: 'Enter group name',
-                            prefixIcon: Icon(Icons.group),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        transText(text: 'Type', bold: true, size: 17),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Row(
-                              children: [
-                                Radio(value:GroupType.memberNonWithdrawal , groupValue: radioValue, onChanged: (value) {
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      transText(text: 'Type', bold: true, size: 17),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Row(
+                            children: [
+                              Radio(
+                                value: GroupType.memberNonWithdrawal,
+                                groupValue: radioValue,
+                                onChanged: (value) {
                                   setState(() {
-                                  radioValue = value!;
+                                    radioValue = value!;
                                   });
-                                },),
-                                Text('AN'),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Radio(value: GroupType.memberWithdrawal, groupValue: radioValue, onChanged: (value) {
+                                },
+                              ),
+                              Text('AN'),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Radio(
+                                value: GroupType.memberWithdrawal,
+                                groupValue: radioValue,
+                                onChanged: (value) {
                                   print(value);
                                   setState(() {
-                                  radioValue = value!;
+                                    radioValue = value!;
                                   });
-                                },),
-                                Text('AW'),
-                              ],
-                            )
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            SimpleDialogOption(
-                              child: transText(
-                                  text: 'Cancel', bold: true, color: primaryColor),
-                              onPressed: () {
-                                Navigator.pop(context, 0);
-                              },
-                            ),
-                            SimpleDialogOption(
-                                onPressed: () {
-                                  if (formKey.currentState!.validate()) {
-                                    Navigator.pop(context, 1);
-                                  }
                                 },
-                                child: transText(
-                                    text: 'Add', bold: true, color: primaryColor)),
-                          ],
-                        )
-                      ],
-                    ),
+                              ),
+                              Text('AW'),
+                            ],
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SimpleDialogOption(
+                            child: transText(
+                                text: 'Cancel',
+                                bold: true,
+                                color: primaryColor),
+                            onPressed: () {
+                              Navigator.pop(context, 0);
+                            },
+                          ),
+                          SimpleDialogOption(
+                              onPressed: () {
+                                if (formKey.currentState!.validate()) {
+                                  Navigator.pop(context, 1);
+                                }
+                              },
+                              child: transText(
+                                  text: 'Add',
+                                  bold: true,
+                                  color: primaryColor)),
+                        ],
+                      )
+                    ],
                   ),
                 ),
-              ],
-            );
-          }
-        );
+              ),
+            ],
+          );
+        });
       },
     )) {
       case 0:
@@ -247,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
           DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
               .createGroup(username!, FirebaseAuth.instance.currentUser!.uid,
-                  groupName.text,radioValue)
+                  groupName.text, radioValue)
               .whenComplete(() {
             _isLoading = false;
           });
@@ -403,7 +414,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 reverse: true,
                 itemBuilder: (context, index) {
                   return TransactionTile(
-                      transactionData: transactionData[index]);
+                      transactionData: transactionData[index],
+                      userId: HelperFunctions.userId!);
                 },
                 itemCount: transactionData.length,
               );
