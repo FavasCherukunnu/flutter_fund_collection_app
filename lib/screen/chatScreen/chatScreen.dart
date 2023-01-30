@@ -87,9 +87,9 @@ class _ChatScreenState extends State<ChatScreen> {
   sentMessage(String amount) async {
     final groupInfo = groupDetails!.data() as Map;
     String? userName = await HelperFunctions.getUserNameFromSF();
-    String senterId = '${widget.userId}_$userName';
+    String senterIdN = '${widget.userId}_$userName';
     await DatabaseService().sentMessage(widget.groupName, widget.groupId,
-        amount, senterId, DateTime.now(), getId(groupInfo['admin']));
+        amount, senterIdN, DateTime.now(), getId(groupInfo['admin']));
   }
 
   getId(String data) {
@@ -197,7 +197,22 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     isAdmin()
                         ? TextButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              final String amount = amountDetails.text;
+                              FocusScopeNode currentFocus =
+                                  FocusScope.of(context);
+                              //got to bottom of listview
+
+                              if (amount.isNotEmpty &&
+                                  isNumeric(amount) &&
+                                  int.parse(amount) >= 0) {
+                                if (!currentFocus.hasPrimaryFocus) {
+                                  currentFocus.unfocus();
+                                }
+                                amountDetails.clear();
+                                await sentMessage(amount);
+                              }
+                            },
                             child: transText(text: 'withdraw'))
                         : IconButton(
                             icon: const Icon(Icons.send),

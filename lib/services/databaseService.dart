@@ -126,20 +126,34 @@ class DatabaseService {
     });
   }
 
-  sentMessage(String groupName, String groupId, String amount, String senterId,
+  sentMessage(String groupName, String groupId, String amount, String senterIdN,
       DateTime time, String AdminId,
       {String message = ""}) async {
-    await groupCollection
-        .doc(groupId)
-        .collection('AmountDetails')
-        .doc(getId(senterId))
-        .update({'amount': FieldValue.increment(double.parse(amount))});
+    if (AdminId == getId(senterIdN)) {
+      await groupCollection
+          .doc(groupId)
+          .collection('AmountDetails')
+          .doc(getId(senterIdN))
+          .update({
+        'amount': FieldValue.increment(int.parse(amount)),
+        'isWithdraw': true
+      });
+    } else {
+      await groupCollection
+          .doc(groupId)
+          .collection('AmountDetails')
+          .doc(getId(senterIdN))
+          .update({
+        'amount': FieldValue.increment(double.parse(amount)),
+        'isWithdraw': false
+      });
+    }
 
     DocumentReference messageReference =
         await groupCollection.doc(groupId).collection('messages').add({
       'amount': amount,
       'message': message,
-      'senterId': senterId,
+      'senterId': senterIdN,
       'time': time.millisecondsSinceEpoch,
       'messegeId': ''
     });
@@ -150,23 +164,23 @@ class DatabaseService {
         .update({'messageId': messageReference.id});
 
 //check admin is paying his own group
-    if (AdminId == getId(senterId)) {
-      await userCollection.doc(getId(senterId)).collection('transaction').add({
+    if (AdminId == getId(senterIdN)) {
+      await userCollection.doc(getId(senterIdN)).collection('transaction').add({
         'groupId': '${groupId}_$groupName',
         'amount': amount,
         'time': time.millisecondsSinceEpoch,
         'messageId': messageReference.id,
-        'senterId': senterId,
+        'senterId': senterIdN,
         'isAdmin': true,
         'isRecieve': false,
       });
     } else {
-      await userCollection.doc(getId(senterId)).collection('transaction').add({
+      await userCollection.doc(getId(senterIdN)).collection('transaction').add({
         'groupId': '${groupId}_$groupName',
         'amount': amount,
         'time': time.millisecondsSinceEpoch,
         'messageId': messageReference.id,
-        'senterId': senterId,
+        'senterId': senterIdN,
         'isAdmin': false,
         'isRecieve': false,
       });
@@ -175,7 +189,7 @@ class DatabaseService {
         'amount': amount,
         'time': time.millisecondsSinceEpoch,
         'messageId': messageReference.id,
-        'senterId': senterId,
+        'senterId': senterIdN,
         'isAdmin': false,
         'isRecieve': true
       });
@@ -183,7 +197,7 @@ class DatabaseService {
 
     await groupCollection
         .doc(groupId)
-        .update({'recentMessage': amount, 'recentMessageSender': senterId});
+        .update({'recentMessage': amount, 'recentMessageSender': senterIdN});
   }
 
   //get messages from group
