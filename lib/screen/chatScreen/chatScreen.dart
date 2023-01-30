@@ -1,15 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:provider/provider.dart';
+import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/helper/helper_function.dart';
-import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
-import 'package:trans_pay/services/authentication.dart';
 import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/widget/messageTile.dart';
 
@@ -35,6 +29,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Stream? messages;
   DocumentSnapshot? groupDetails;
   bool _isChatLoaded = false;
+  GroupType groupType = GroupType();
 
   @override
   void initState() {
@@ -46,6 +41,10 @@ class _ChatScreenState extends State<ChatScreen> {
   Future getMessages() async {
     //getting group details
     groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
+    final groupInfo = groupDetails!.data() as Map;
+    setState(() {
+      groupType.setGroupType = groupInfo['groupType'];
+    });
 
     messages = await DatabaseService()
         .groupCollection
@@ -127,6 +126,106 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Widget buildUserSentButton(){
+    return IconButton(
+        icon: const Icon(Icons.send),
+        onPressed: () async {
+          final String amount = amountDetails.text;
+          FocusScopeNode currentFocus =
+              FocusScope.of(context);
+          //got to bottom of listview
+
+          if (amount.isNotEmpty &&
+              isNumeric(amount) &&
+              int.parse(amount) >= 0) {
+            if (!currentFocus.hasPrimaryFocus) {
+              currentFocus.unfocus();
+            }
+            amountDetails.clear();
+            await sentMessage(amount);
+          }
+          // listViewController.animateTo(
+          //     listViewController.position.minScrollExtent,
+          //     duration: const Duration(milliseconds: 500),
+          //     curve: Curves.easeOut);
+        },
+        color: primaryColor,
+        tooltip: 'pay',
+      );
+  }
+
+  Widget buildAdminWithrawalbutton(){
+      return TextButton(
+          onPressed: () async {
+            final String amount = amountDetails.text;
+            FocusScopeNode currentFocus =
+                FocusScope.of(context);
+            //got to bottom of listview
+
+            if (amount.isNotEmpty &&
+                isNumeric(amount) &&
+                int.parse(amount) >= 0) {
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+              amountDetails.clear();
+              await sentMessage(amount);
+            }
+          },
+          child: transText(text: 'withdraw'));
+
+  }
+
+  Widget buildUserSentAndWithrawalButton(){
+    return Row(
+      children: [
+        buildAdminWithrawalbutton(),
+        IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: () async {
+              final String amount = amountDetails.text;
+              FocusScopeNode currentFocus =
+                  FocusScope.of(context);
+              //got to bottom of listview
+
+              if (amount.isNotEmpty &&
+                  isNumeric(amount) &&
+                  int.parse(amount) >= 0) {
+                if (!currentFocus.hasPrimaryFocus) {
+                  currentFocus.unfocus();
+                }
+                amountDetails.clear();
+                await sentMessage(amount);
+              }
+              // listViewController.animateTo(
+              //     listViewController.position.minScrollExtent,
+              //     duration: const Duration(milliseconds: 500),
+              //     curve: Curves.easeOut);
+            },
+            color: primaryColor,
+            tooltip: 'pay',
+          ),
+      ],
+    );
+  }
+
+  buildbottombutton(){
+    print(isAdmin());
+    if(isAdmin()){
+      if(groupType.getGroupType == GroupType.memberWithdrawal){
+        return buildUserSentAndWithrawalButton();
+      }else if(groupType.getGroupType == GroupType.memberNonWithdrawal){
+        return buildAdminWithrawalbutton();
+      }
+    }else{
+      if(groupType.getGroupType==GroupType.memberWithdrawal){
+        return buildUserSentAndWithrawalButton();
+      }else{
+        return buildUserSentButton();
+      }
+    }
+  }
+
   Column chatSection() {
     return Column(
       children: [
@@ -195,50 +294,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         autofocus: false,
                       ),
                     ),
-                    isAdmin()
-                        ? TextButton(
-                            onPressed: () async {
-                              final String amount = amountDetails.text;
-                              FocusScopeNode currentFocus =
-                                  FocusScope.of(context);
-                              //got to bottom of listview
-
-                              if (amount.isNotEmpty &&
-                                  isNumeric(amount) &&
-                                  int.parse(amount) >= 0) {
-                                if (!currentFocus.hasPrimaryFocus) {
-                                  currentFocus.unfocus();
-                                }
-                                amountDetails.clear();
-                                await sentMessage(amount);
-                              }
-                            },
-                            child: transText(text: 'withdraw'))
-                        : IconButton(
-                            icon: const Icon(Icons.send),
-                            onPressed: () async {
-                              final String amount = amountDetails.text;
-                              FocusScopeNode currentFocus =
-                                  FocusScope.of(context);
-                              //got to bottom of listview
-
-                              if (amount.isNotEmpty &&
-                                  isNumeric(amount) &&
-                                  int.parse(amount) >= 0) {
-                                if (!currentFocus.hasPrimaryFocus) {
-                                  currentFocus.unfocus();
-                                }
-                                amountDetails.clear();
-                                await sentMessage(amount);
-                              }
-                              // listViewController.animateTo(
-                              //     listViewController.position.minScrollExtent,
-                              //     duration: const Duration(milliseconds: 500),
-                              //     curve: Curves.easeOut);
-                            },
-                            color: primaryColor,
-                            tooltip: 'pay',
-                          ),
+                    buildbottombutton()
+                    
                   ],
                 ),
               )

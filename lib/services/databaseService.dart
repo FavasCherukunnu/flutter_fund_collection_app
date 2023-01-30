@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
 
 class DatabaseService {
@@ -34,12 +35,13 @@ class DatabaseService {
   }
 
   // creating a group
-  Future createGroup(String userName, String id, String groupName) async {
+  Future createGroup(String userName, String id, String groupName,int grouptype) async {
     DocumentReference groupDocumentReference = await groupCollection.add({
       "groupName": groupName,
       "groupIcon": "",
       "admin": "${id}_$userName",
       "members": [],
+      'groupType':grouptype,
       "groupId": "",
       "recentMessage": "",
       "recentMessageSender": "",
@@ -142,7 +144,7 @@ class DatabaseService {
           .collection('AmountDetails')
           .doc(getId(senterIdN))
           .update({
-        'DepositAmount': FieldValue.increment(double.parse(amount)),
+        'depositAmount': FieldValue.increment(double.parse(amount)),
       });
     }
 

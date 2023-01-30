@@ -10,7 +10,12 @@ class Constants {
   static String projectId = "transpay-7464a";
 }
 
-enum GroupType{
-  adminWithdrawal,
-  nonAdminWithdrawal,
+class GroupType{
+  int groupType =0;
+  static const int memberWithdrawal = 0;
+  static const int memberNonWithdrawal=1;
+  set setGroupType (value){
+    this.groupType = value;
+  }
+  int get getGroupType => groupType;
 }
