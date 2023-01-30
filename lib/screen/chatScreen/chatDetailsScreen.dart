@@ -193,7 +193,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                         if (snapshot.hasData) {
                                           final doc = snapshot.data!.docs[0];
                                           return transText(
-                                              text: doc['amount'].toString());
+                                              text: doc['depositAmount'].toString());
                                         } else {
                                           return transText(text: 'Na');
                                         }

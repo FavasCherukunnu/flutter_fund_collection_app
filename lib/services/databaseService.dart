@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trans_pay/constants/common.dart';
-import 'package:trans_pay/models/userDetails.dart';
 
 class DatabaseService {
   final String? uid;
@@ -87,7 +86,7 @@ class DatabaseService {
 
     collection.docs.forEach((element) {
       final map = element.data();
-      totalAmount = totalAmount + map['amount'];
+      totalAmount = totalAmount + map['depositAmount'];
     });
     return totalAmount;
   }
@@ -102,7 +101,7 @@ class DatabaseService {
         .doc(groupId)
         .collection('AmountDetails')
         .doc(getId(senterIdN))
-        .set({'amount': amount, 'memberId': senterIdN});
+        .set({'depositAmount': amount, 'memberId': senterIdN,'withdrawAmount':0});
   }
 
   joinGroup(
@@ -135,8 +134,7 @@ class DatabaseService {
           .collection('AmountDetails')
           .doc(getId(senterIdN))
           .update({
-        'amount': FieldValue.increment(int.parse(amount)),
-        'isWithdraw': true
+        'withdrawAmount': FieldValue.increment(int.parse(amount)),
       });
     } else {
       await groupCollection
@@ -144,8 +142,7 @@ class DatabaseService {
           .collection('AmountDetails')
           .doc(getId(senterIdN))
           .update({
-        'amount': FieldValue.increment(double.parse(amount)),
-        'isWithdraw': false
+        'DepositAmount': FieldValue.increment(double.parse(amount)),
       });
     }
 

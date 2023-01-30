@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     gettingUserData();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void addGroup() async {
     final formKey = GlobalKey<FormState>();
     final groupName = TextEditingController();
+    int radioValue = 0;
     switch (await showDialog(
       context: context,
       builder: (context) {
@@ -167,7 +171,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     SizedBox(
-                      height: 30,
+                      height: 10,
+                    ),
+                    transText(text: 'Type', bold: true, size: 17),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(
+                          children: [
+                            Radio(value: 0, groupValue: radioValue, onChanged: (value) {
+                              setState(() {
+                              radioValue = value!;
+                              });
+                            },),
+                            Text('AN'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Radio(value: 1, groupValue: radioValue, onChanged: (value) {
+                              setState(() {
+                              radioValue = value!;
+                              });
+                            },),
+                            Text('AW'),
+                          ],
+                        )
+                      ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

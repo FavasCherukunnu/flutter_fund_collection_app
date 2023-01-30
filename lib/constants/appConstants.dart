@@ -9,3 +9,8 @@ class Constants {
   static String messagingSenderId = "101452769298";
   static String projectId = "transpay-7464a";
 }
+
+enum GroupType{
+  adminWithdrawal,
+  nonAdminWithdrawal,
+}
