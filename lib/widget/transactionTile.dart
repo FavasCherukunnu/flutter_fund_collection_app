@@ -34,7 +34,7 @@ class TransactionTile extends StatelessWidget {
         selected: true,
         title: transText(
             text: _isRecieve ? 'Recieved From' : 'Paid To',
-            color: _isRecieve ? Colors.green : Colors.red,
+            color: _isRecieve ? credittedColour : adminWithdrawColor,
             size: 15),
         onTap: () {},
         subtitle: Column(
@@ -58,7 +58,7 @@ class TransactionTile extends StatelessWidget {
             Expanded(
               child: transText(
                   text: '${transactionData['amount']}',
-                  color: _isRecieve ? Colors.green : Colors.red,
+                  color: _isRecieve ? credittedColour : adminWithdrawColor,
                   size: 25),
             ),
             transText(text: formattedTime, color: Colors.black),

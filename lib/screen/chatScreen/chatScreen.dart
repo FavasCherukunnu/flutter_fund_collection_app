@@ -109,6 +109,24 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  bool isAdmin({String? senterIDN = null}) {
+    String? adminIdN;
+    String? checkingId;
+
+    if (senterIDN != null) {
+      checkingId = getId(senterIDN);
+    } else {
+      checkingId = widget.userId;
+    }
+    final groupInfo = groupDetails!.data() as Map;
+    adminIdN = groupInfo['admin'];
+    if (getId(adminIdN!) == checkingId) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   Column chatSection() {
     return Column(
       children: [
@@ -117,6 +135,8 @@ class _ChatScreenState extends State<ChatScreen> {
               ? StreamBuilder(
                   stream: messages,
                   builder: (context, AsyncSnapshot snapshot) {
+                    final groupInfo = groupDetails!.data() as Map;
+
                     if (snapshot.hasData) {
                       final data = snapshot.data.docs;
 
@@ -127,6 +147,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             isSenter: checkSenter(data[index]['senterId']),
                             time: data[index]['time'],
                             senderName: getName(data[index]['senterId']),
+                            isAdmin:
+                                isAdmin(senterIDN: data[index]['senterId']),
                           );
                         },
                         itemCount: data.length,
@@ -173,30 +195,35 @@ class _ChatScreenState extends State<ChatScreen> {
                         autofocus: false,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: () async {
-                        final String amount = amountDetails.text;
-                        FocusScopeNode currentFocus = FocusScope.of(context);
-                        //got to bottom of listview
+                    isAdmin()
+                        ? TextButton(
+                            onPressed: () {},
+                            child: transText(text: 'withdraw'))
+                        : IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () async {
+                              final String amount = amountDetails.text;
+                              FocusScopeNode currentFocus =
+                                  FocusScope.of(context);
+                              //got to bottom of listview
 
-                        if (amount.isNotEmpty &&
-                            isNumeric(amount) &&
-                            int.parse(amount) >= 0) {
-                          if (!currentFocus.hasPrimaryFocus) {
-                            currentFocus.unfocus();
-                          }
-                          amountDetails.clear();
-                          await sentMessage(amount);
-                        }
-                        // listViewController.animateTo(
-                        //     listViewController.position.minScrollExtent,
-                        //     duration: const Duration(milliseconds: 500),
-                        //     curve: Curves.easeOut);
-                      },
-                      color: primaryColor,
-                      tooltip: 'pay',
-                    ),
+                              if (amount.isNotEmpty &&
+                                  isNumeric(amount) &&
+                                  int.parse(amount) >= 0) {
+                                if (!currentFocus.hasPrimaryFocus) {
+                                  currentFocus.unfocus();
+                                }
+                                amountDetails.clear();
+                                await sentMessage(amount);
+                              }
+                              // listViewController.animateTo(
+                              //     listViewController.position.minScrollExtent,
+                              //     duration: const Duration(milliseconds: 500),
+                              //     curve: Curves.easeOut);
+                            },
+                            color: primaryColor,
+                            tooltip: 'pay',
+                          ),
                   ],
                 ),
               )

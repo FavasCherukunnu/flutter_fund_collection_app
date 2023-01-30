@@ -10,13 +10,15 @@ class MessageTile extends StatelessWidget {
       required this.amount,
       required this.isSenter,
       required this.time,
-      required this.senderName})
+      required this.senderName,
+      required this.isAdmin})
       : super(key: key);
 
   String amount;
   bool isSenter;
   int time;
   String senderName;
+  bool isAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,11 @@ class MessageTile extends StatelessWidget {
                 ? const EdgeInsets.fromLTRB(20, 10, 5, 0)
                 : const EdgeInsets.fromLTRB(5, 10, 10, 0),
             decoration: BoxDecoration(
-                color: isSenter ? senterChatColor : recieverChatColor,
+                color: isAdmin
+                    ? adminWithdrawColor
+                    : isSenter
+                        ? senterChatColor
+                        : recieverChatColor,
                 borderRadius: BorderRadius.circular(8)),
             //margin:const  EdgeInsets.only(bottom: 10, right: 10),
             child: Column(
@@ -47,7 +53,7 @@ class MessageTile extends StatelessWidget {
                 Container(
                   alignment: Alignment.topLeft,
                   child: transText(
-                      text: senderName,
+                      text: isSenter ? 'You' : senderName,
                       bold: true,
                       color: Colors.white,
                       size: 17),
