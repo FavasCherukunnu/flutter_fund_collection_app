@@ -127,8 +127,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget buildUserSentButton(){
-    return IconButton(
-        icon: const Icon(Icons.send),
+    return TextButton(
+        child: transText(text: 'Pay'),
         onPressed: () async {
           final String amount = amountDetails.text;
           FocusScopeNode currentFocus =
@@ -149,8 +149,6 @@ class _ChatScreenState extends State<ChatScreen> {
           //     duration: const Duration(milliseconds: 500),
           //     curve: Curves.easeOut);
         },
-        color: primaryColor,
-        tooltip: 'pay',
       );
   }
 
@@ -180,31 +178,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Row(
       children: [
         buildAdminWithrawalbutton(),
-        IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: () async {
-              final String amount = amountDetails.text;
-              FocusScopeNode currentFocus =
-                  FocusScope.of(context);
-              //got to bottom of listview
-
-              if (amount.isNotEmpty &&
-                  isNumeric(amount) &&
-                  int.parse(amount) >= 0) {
-                if (!currentFocus.hasPrimaryFocus) {
-                  currentFocus.unfocus();
-                }
-                amountDetails.clear();
-                await sentMessage(amount);
-              }
-              // listViewController.animateTo(
-              //     listViewController.position.minScrollExtent,
-              //     duration: const Duration(milliseconds: 500),
-              //     curve: Curves.easeOut);
-            },
-            color: primaryColor,
-            tooltip: 'pay',
-          ),
+        buildUserSentButton(),
       ],
     );
   }
