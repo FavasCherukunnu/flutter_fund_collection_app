@@ -163,13 +163,15 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                               snapshot) {
                                         if (snapshot.hasData) {
                                           final doc = snapshot.data!.docs[0];
-                                          return Column(
-                                            children: [
-                                              transText(
-                                                  text: doc['depositAmount'].toString(),color: credittedColor),
-                                              isAdmin(members[index])||getGroupType()==GroupType.memberWithdrawal? transText(
-                                                  text: doc['withdrawAmount'].toString(),color: debitColor):SizedBox.shrink(),
-                                            ],
+                                          return SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                transText(
+                                                    text: doc['depositAmount'].toString(),color: credittedColor),
+                                                isAdmin(members[index])||getGroupType()==GroupType.memberWithdrawal? transText(
+                                                    text: doc['withdrawAmount'].toString(),color: debitColor):SizedBox.shrink(),
+                                              ],
+                                            ),
                                           );
                                         } else {
                                           return transText(text: 'Na');
