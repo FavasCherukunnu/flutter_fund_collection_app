@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
+import 'package:trans_pay/models/groupDetails.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/services/databaseService.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
-  ChatDetailsScreen({super.key, required this.groupId, required this.groupType});
+  ChatDetailsScreen(
+      {super.key, required this.groupId, required this.groupType});
 
   String groupId;
   GroupType groupType;
@@ -22,7 +24,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   late int indexOfGroup;
 
   Stream? groupInfo;
-  bool _isTotalAmountLoaded = false;
+  Stream? amountDetails;
   late double totalAmount;
 
   @override
@@ -31,12 +33,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     super.initState();
 
     groupInfo = DatabaseService().getGroupInfoStream(widget.groupId);
-    DatabaseService().getGroupTotalAount(widget.groupId).then((value) {
-      totalAmount = value;
-      setState(() {
-        _isTotalAmountLoaded = true;
-      });
-    });
+    amountDetails = DatabaseService().amountDetails(widget.groupId);
     // final totalAmount = DatabaseService().getTotalAmountInfo(widget.groupId);
   }
 
@@ -46,10 +43,9 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
 
     late String adminIdN;
 
-    isAdmin(String userIdN)=>getId(adminIdN)==getId(userIdN)?true:false;
+    isAdmin(String userIdN) => getId(adminIdN) == getId(userIdN) ? true : false;
 
-
-    int getGroupType(){
+    int getGroupType() {
       return widget.groupType.getGroupType;
     }
 
@@ -112,26 +108,66 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              transText(
-                                  text: 'TOTAL AMOUNT: ',
-                                  color: Colors.white,
-                                  size: 15,
-                                  bold: true),
-                              transText(
-                                  text: _isTotalAmountLoaded
-                                      ? totalAmount.toString()
-                                      : 'loading',
-                                  color: Colors.white,
-                                  size: 16)
-                            ],
-                          ),
-                        )
-                        
+                        StreamBuilder(
+                          stream: amountDetails,
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return CircularProgressIndicator();
+                            }
+                            final data = snapshot.data.docs;
+                            final AmountDetails amounts = AmountDetails()
+                              ..setValues(data);
+                            return Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    transText(
+                                        text: 'CREDITTED: ',
+                                        color: Colors.white,
+                                        size: 15,
+                                        bold: true),
+                                    transText(
+                                        text: amounts.credited.toString(),
+                                        color: Colors.white,
+                                        size: 16)
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    transText(
+                                        text: 'DEBITTED: ',
+                                        color: Colors.white,
+                                        size: 15,
+                                        bold: true),
+                                    transText(
+                                        text: amounts.debited.toString(),
+                                        color: Colors.white,
+                                        size: 16)
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    transText(
+                                        text: 'BALANCE: ',
+                                        color: Colors.white,
+                                        size: 15,
+                                        bold: true),
+                                    transText(
+                                        text: amounts.getBalance.toString(),
+                                        color: Colors.white,
+                                        size: 16)
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                )
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -167,9 +203,19 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                             child: Column(
                                               children: [
                                                 transText(
-                                                    text: doc['depositAmount'].toString(),color: credittedColor),
-                                                isAdmin(members[index])||getGroupType()==GroupType.memberWithdrawal? transText(
-                                                    text: doc['withdrawAmount'].toString(),color: debitColor):SizedBox.shrink(),
+                                                    text: doc['depositAmount']
+                                                        .toString(),
+                                                    color: credittedColor),
+                                                isAdmin(members[index]) ||
+                                                        getGroupType() ==
+                                                            GroupType
+                                                                .memberWithdrawal
+                                                    ? transText(
+                                                        text:
+                                                            doc['withdrawAmount']
+                                                                .toString(),
+                                                        color: debitColor)
+                                                    : SizedBox.shrink(),
                                               ],
                                             ),
                                           );

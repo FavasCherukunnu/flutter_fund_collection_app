@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
+import 'package:trans_pay/models/groupDetails.dart';
 
 class DatabaseService {
   final String? uid;
@@ -82,16 +83,16 @@ class DatabaseService {
   }
 
 // get total amount transacted in group
-  Future getGroupTotalAount(String groupId) async {
-    double totalAmount = 0;
-    final collection =
-        await groupCollection.doc(groupId).collection('AmountDetails').get();
+  amountDetails(String groupId) {
+    // double totalAmount = 0;
+    // final collection = await
+    return groupCollection.doc(groupId).collection('AmountDetails').snapshots();
 
-    collection.docs.forEach((element) {
-      final map = element.data();
-      totalAmount = totalAmount + map['depositAmount'];
-    });
-    return totalAmount;
+    // collection.docs.forEach((element) {
+    //   final map = element.data();
+    //   totalAmount = totalAmount + map['depositAmount'];
+    // });
+    // return collection;
   }
 
   gpSearchByName(String groupName) {
@@ -99,16 +100,13 @@ class DatabaseService {
   }
   //add total amount of a member to database of group
 
-  storeAmount(String groupId, String senterIdN, int amount) async {
+  storeAmount(String groupId, String senterIdN, double amount) async {
     await groupCollection
         .doc(groupId)
         .collection('AmountDetails')
         .doc(getId(senterIdN))
-        .set({
-      'depositAmount': amount,
-      'memberId': senterIdN,
-      'withdrawAmount': 0
-    });
+        .set(
+            {'depositAmount': 0, 'memberId': senterIdN, 'withdrawAmount': 0.0});
   }
 
   joinGroup(
@@ -141,7 +139,7 @@ class DatabaseService {
           .collection('AmountDetails')
           .doc(getId(senterIdN))
           .update({
-        'withdrawAmount': FieldValue.increment(int.parse(amount)),
+        'withdrawAmount': FieldValue.increment(double.parse(amount)),
       });
     } else {
       await groupCollection

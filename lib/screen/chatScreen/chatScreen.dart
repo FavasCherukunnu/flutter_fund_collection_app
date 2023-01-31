@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/constants/common.dart';
+import 'package:trans_pay/models/groupDetails.dart';
 import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
 import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/widget/messageTile.dart';
@@ -27,9 +28,12 @@ class _ChatScreenState extends State<ChatScreen> {
   String? userName;
   ScrollController listViewController = ScrollController();
   Stream? messages;
+  Stream? totalAmount;
   DocumentSnapshot? groupDetails;
   bool _isChatLoaded = false;
   GroupType groupType = GroupType();
+  AmountDetails totalAmountDetails = AmountDetails();
+  String errorText = '';
 
   @override
   void initState() {
@@ -41,6 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future getMessages() async {
     //getting group details
     groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
+    totalAmount = DatabaseService().amountDetails(widget.groupId);
     final groupInfo = groupDetails!.data() as Map;
     setState(() {
       groupType.setGroupType = groupInfo['groupType'];
@@ -74,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       MaterialPageRoute(
                           builder: (context) => ChatDetailsScreen(
                                 groupId: widget.groupId,
-                                groupType:groupType,
+                                groupType: groupType,
                               )));
                 },
               ),
@@ -136,7 +141,9 @@ class _ChatScreenState extends State<ChatScreen> {
         FocusScopeNode currentFocus = FocusScope.of(context);
         //got to bottom of listview
 
-        if (amount.isNotEmpty && isNumeric(amount) && int.parse(amount) >= 0) {
+        if (amount.isNotEmpty &&
+            isNumeric(amount) &&
+            double.parse(amount) >= 0) {
           if (!currentFocus.hasPrimaryFocus) {
             currentFocus.unfocus();
           }
@@ -158,14 +165,19 @@ class _ChatScreenState extends State<ChatScreen> {
           FocusScopeNode currentFocus = FocusScope.of(context);
           //got to bottom of listview
 
-          if (amount.isNotEmpty &&
-              isNumeric(amount) &&
-              int.parse(amount) >= 0) {
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.unfocus();
+          if (amount.isNotEmpty && isNumeric(amount) && num.parse(amount) > 0) {
+            if (totalAmountDetails.isdebitable(amount: double.parse(amount))) {
+              errorText = '';
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+              amountDetails.clear();
+              await sentMessage(amount, true);
+            } else {
+              setState(() {
+                errorText = 'No Money In Group';
+              });
             }
-            amountDetails.clear();
-            await sentMessage(amount, true);
           }
         },
         child: transText(text: 'withdraw'));
@@ -180,7 +192,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  buildbottombutton() {
+  Widget? buildbottombutton() {
     if (isAdmin()) {
       if (groupType.getGroupType == GroupType.memberWithdrawal) {
         return buildUserSentAndWithrawalButton();
@@ -194,6 +206,7 @@ class _ChatScreenState extends State<ChatScreen> {
         return buildUserSentButton();
       }
     }
+    return null;
   }
 
   Column chatSection() {
@@ -233,42 +246,66 @@ class _ChatScreenState extends State<ChatScreen> {
               : const CircularProgressIndicator(),
         ),
         _isChatLoaded
-            ? Container(
-                margin: const EdgeInsets.fromLTRB(5, 10, 5, 5),
-                padding: const EdgeInsets.fromLTRB(15, 5, 5, 5),
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                  color: Colors.white,
-                ),
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: TextField(
-                        keyboardType: TextInputType.number,
-                        controller: amountDetails,
-                        // onSubmitted: (value) {
+            ? StreamBuilder(
+                stream: totalAmount,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    totalAmountDetails.setValues(snapshot.data.docs);
 
-                        // },
-                        style: const TextStyle(
-                          fontFamily: 'SofiSans',
-                          letterSpacing: 1,
-                        ),
-                        //controller: ,
-                        decoration: const InputDecoration.collapsed(
-                          hintText: 'Enter Amount',
-                          hintStyle: TextStyle(
-                            fontFamily: 'SofiSans',
-                            letterSpacing: 1,
+                    if (totalAmountDetails.isdebitable(
+                        amount: amountDetails.text.isEmpty
+                            ? null
+                            : double.parse(amountDetails.text))) {
+                      errorText = '';
+                    } else {
+                      errorText = 'No Money In Group';
+                    }
+
+                    return Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(5, 10, 5, 5),
+                          padding: const EdgeInsets.fromLTRB(15, 5, 5, 5),
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: TextFormField(
+                                  keyboardType: TextInputType.number,
+                                  controller: amountDetails,
+                                  // onSubmitted: (value) {
+
+                                  // },
+                                  style: const TextStyle(
+                                    fontFamily: 'SofiSans',
+                                    letterSpacing: 1,
+                                  ),
+                                  //controller: ,
+                                  decoration: const InputDecoration.collapsed(
+                                    hintText: 'Enter Amount',
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'SofiSans',
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                  //focusNode: focusNode,
+                                  autofocus: false,
+                                ),
+                              ),
+                              buildbottombutton()!
+                            ],
                           ),
                         ),
-                        //focusNode: focusNode,
-                        autofocus: false,
-                      ),
-                    ),
-                    buildbottombutton()
-                  ],
-                ),
-              )
+                        transText(text: errorText, color: Colors.red),
+                      ],
+                    );
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                })
             : Container()
       ],
     );
