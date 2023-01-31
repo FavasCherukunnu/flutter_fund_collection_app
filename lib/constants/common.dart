@@ -4,7 +4,7 @@ const primaryBgColor = Color(0xfff3e5f5);
 const primaryColor = Color(0xff673ab7);
 const senterChatColor = Color.fromARGB(255, 82, 52, 134);
 const recieverChatColor = Color.fromARGB(255, 150, 126, 190);
-const depositColor = Color.fromARGB(255, 212, 21, 7);
+const debitColor = Color.fromARGB(255, 212, 21, 7);
 const credittedColor = Color.fromARGB(255, 16, 143, 20);
 
 Widget transText(

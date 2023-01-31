@@ -74,6 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       MaterialPageRoute(
                           builder: (context) => ChatDetailsScreen(
                                 groupId: widget.groupId,
+                                groupType:groupType,
                               )));
                 },
               ),
@@ -180,7 +181,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   buildbottombutton() {
-    print(isAdmin());
     if (isAdmin()) {
       if (groupType.getGroupType == GroupType.memberWithdrawal) {
         return buildUserSentAndWithrawalButton();

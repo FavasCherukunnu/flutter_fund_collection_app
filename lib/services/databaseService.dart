@@ -135,7 +135,7 @@ class DatabaseService {
   sentMessage(String groupName, String groupId, String amount, String senterIdN,
       DateTime time, String AdminId,
       {String message = "", required bool isWithdraw}) async {
-    if (AdminId == getId(senterIdN)) {
+    if (isWithdraw) {
       await groupCollection
           .doc(groupId)
           .collection('AmountDetails')

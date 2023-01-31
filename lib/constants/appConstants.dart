@@ -12,7 +12,9 @@ class Constants {
 
 class GroupType{
   int groupType =0;
+  //withdrawal to member
   static const int memberWithdrawal = 0;
+  //can not withraw by members
   static const int memberNonWithdrawal=1;
   set setGroupType (value){
     this.groupType = value;

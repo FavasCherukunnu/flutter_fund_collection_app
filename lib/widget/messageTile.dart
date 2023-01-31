@@ -46,7 +46,7 @@ class MessageTile extends StatelessWidget {
                 : const EdgeInsets.fromLTRB(5, 10, 10, 0),
             decoration: BoxDecoration(
                 color: isWithdraw
-                    ? depositColor
+                    ? debitColor
                     : isSenter
                         ? senterChatColor
                         : recieverChatColor,

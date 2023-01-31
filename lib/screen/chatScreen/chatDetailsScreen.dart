@@ -1,16 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
+import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/services/databaseService.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
-  ChatDetailsScreen({super.key, required this.groupId});
+  ChatDetailsScreen({super.key, required this.groupId, required this.groupType});
 
   String groupId;
+  GroupType groupType;
 
   @override
   State<ChatDetailsScreen> createState() => _ChatDetailsScreenState();
@@ -44,30 +44,14 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   Widget build(BuildContext context) {
     userdata = Provider.of<UserClass>(context);
 
-    String getName(String id) {
-      return id.substring(id.indexOf('_') + 1);
+    late String adminIdN;
+
+    isAdmin(String userIdN)=>getId(adminIdN)==getId(userIdN)?true:false;
+
+
+    int getGroupType(){
+      return widget.groupType.getGroupType;
     }
-
-    String getId(String id) {
-      return id.substring(0, id.indexOf('_'));
-    }
-    // Map args = {};
-    // Group group = Group(name: 'NA');
-    // List<GroupDetails> groupDetails = [];
-
-    // if (arguments == null) {
-    //   args = {};
-    //   indexOfGroup = 0;
-    // } else {
-    //   args = arguments as Map;
-
-    //   group = args['group'];
-    //   indexOfGroup = args['index'];
-
-    //   group.groupDetails.forEach((key, value) {
-    //     groupDetails.add(GroupDetails(key, value));
-    //   });
-    // }
 
     return Scaffold(
       backgroundColor: primaryBgColor,
@@ -81,6 +65,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
             if (snapshot.hasData) {
               final group = snapshot.data;
               String admin = group['admin'];
+              adminIdN = admin;
               String groupName = group['groupName'];
               final members = group['members'];
 
@@ -146,21 +131,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                             ],
                           ),
                         )
-                        // Center(
-                        //     child: transText(
-                        //         text: group.name, size: 25, color: Colors.white)),
-                        // IconButton(
-                        //   icon: Icon(
-                        //     Icons.edit,
-                        //     color: Colors.white,
-                        //   ),
-                        //   onPressed: () {
-                        //     editGroupName();
-                        //   },
-                        // ),
-                        // const SizedBox(
-                        //   height: 20,
-                        // )
+                        
                       ],
                     ),
                   ),
@@ -192,8 +163,14 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                               snapshot) {
                                         if (snapshot.hasData) {
                                           final doc = snapshot.data!.docs[0];
-                                          return transText(
-                                              text: doc['depositAmount'].toString());
+                                          return Column(
+                                            children: [
+                                              transText(
+                                                  text: doc['depositAmount'].toString(),color: credittedColor),
+                                              isAdmin(members[index])||getGroupType()==GroupType.memberWithdrawal? transText(
+                                                  text: doc['withdrawAmount'].toString(),color: debitColor):SizedBox.shrink(),
+                                            ],
+                                          );
                                         } else {
                                           return transText(text: 'Na');
                                         }

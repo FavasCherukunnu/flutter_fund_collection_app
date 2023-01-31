@@ -76,8 +76,8 @@ class TransactionTile extends StatelessWidget {
   getThemeColor() => _isWithdraw
       ? own
           ? credittedColor
-          : depositColor
+          : debitColor
       : own
-          ? depositColor
+          ? debitColor
           : credittedColor;
 }
