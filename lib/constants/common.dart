@@ -6,6 +6,7 @@ const senterChatColor = Color.fromARGB(255, 82, 52, 134);
 const recieverChatColor = Color.fromARGB(255, 150, 126, 190);
 const debitColor = Color.fromARGB(255, 212, 21, 7);
 const credittedColor = Color.fromARGB(255, 16, 143, 20);
+const dateColor = Color.fromARGB(255, 100, 153, 223);
 
 Widget transText(
     {required String text,

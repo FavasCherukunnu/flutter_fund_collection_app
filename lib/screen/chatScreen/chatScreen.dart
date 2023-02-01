@@ -6,6 +6,7 @@ import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/models/groupDetails.dart';
 import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
 import 'package:trans_pay/services/databaseService.dart';
+import 'package:trans_pay/widget/dateTile.dart';
 import 'package:trans_pay/widget/messageTile.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -218,21 +219,51 @@ class _ChatScreenState extends State<ChatScreen> {
                   stream: messages,
                   builder: (context, AsyncSnapshot snapshot) {
                     final groupInfo = groupDetails!.data() as Map;
+                    DateTime prevDay;
+                    DateTime currentDay;
 
                     if (snapshot.hasData) {
                       final data = snapshot.data.docs;
 
                       return ListView.builder(
                         itemBuilder: (context, index) {
-                          return MessageTile(
-                              amount: data[index]['amount'],
-                              isSenter: checkSenter(data[index]['senterId']),
-                              time: data[index]['time'],
-                              senderName: getName(data[index]['senterId']),
-                              isAdmin:
-                                  isAdmin(senterIDN: data[index]['senterId']),
-                              groupType: groupType.getGroupType,
-                              isWithdraw: data[index]['isWithdraw']);
+                          //determine new day
+                          currentDay = DateTime.fromMillisecondsSinceEpoch(
+                              data[index]['time']);
+                          prevDay = DateTime.fromMillisecondsSinceEpoch(
+                              data[index == 0 ? index : index - 1]['time']);
+                          Duration diff = currentDay.difference(prevDay);
+
+                          bool isChanged =
+                              (diff.inDays > 1 || diff.inDays < -1) ||
+                                      currentDay.day != prevDay.day
+                                  ? true
+                                  : false;
+
+                          return Column(
+                            children: [
+                              index == data.length - 1
+                                  ? dateTile(
+                                      text:
+                                          '${currentDay.day}-${currentDay.month}-${currentDay.year}')
+                                  : const SizedBox.shrink(),
+                              MessageTile(
+                                  amount: data[index]['amount'],
+                                  isSenter:
+                                      checkSenter(data[index]['senterId']),
+                                  time: data[index]['time'],
+                                  senderName: getName(data[index]['senterId']),
+                                  isAdmin: isAdmin(
+                                      senterIDN: data[index]['senterId']),
+                                  groupType: groupType.getGroupType,
+                                  isWithdraw: data[index]['isWithdraw']),
+                              isChanged
+                                  ? dateTile(
+                                      text:
+                                          '${prevDay.day}-${prevDay.month}-${prevDay.year}')
+                                  : const SizedBox.shrink(),
+                            ],
+                          );
                         },
                         itemCount: data.length,
                         reverse: true,

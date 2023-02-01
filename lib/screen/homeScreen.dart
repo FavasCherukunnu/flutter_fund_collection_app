@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Stream? groups;
   bool _isLoading = false;
   String groupName = "";
+  String dropDownValue = 'daqaqwVIjilVg84Mpxfx_boys';
 
   //bottom navigation index
   int _bottomNavValue = 0;
@@ -398,44 +399,117 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   buildTransaction() {
-    Stream<QuerySnapshot>? transaction = DatabaseService()
+    Stream? transaction = DatabaseService()
         .getTransaction(FirebaseAuth.instance.currentUser!.uid);
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: StreamBuilder(
-        stream: transaction,
+    return StreamBuilder(
+        stream: groups,
         builder: (context, snapshot) {
+          List<DropdownMenuItem<dynamic>> dropDownItems = [];
+          dropDownItems.add(DropdownMenuItem(
+            child: transText(text: 'All'),
+            value: 'All',
+          ));
+
           if (snapshot.hasData) {
-            //if transaction has happened
-            if (snapshot.data!.docs.length != 0) {
-              final transactionData = snapshot.data!.docs;
-              return ListView.builder(
-                reverse: true,
-                itemBuilder: (context, index) {
-                  return TransactionTile(
-                      transactionData: transactionData[index],
-                      userId: HelperFunctions.userId!);
-                },
-                itemCount: transactionData.length,
+            List groupsList = snapshot.data['groups'];
+
+            if (groupsList == null || groupsList.isEmpty) {
+              return Center(
+                child: transText(text: 'No Transactions'),
               );
             } else {
-              return Center(
-                child: transText(text: 'No transaction'),
+              dropDownItems.addAll(groupsList.map(
+                (groupIdN) {
+                  return DropdownMenuItem<dynamic>(
+                      value: groupIdN,
+                      child: transText(text: getName(groupIdN)));
+                },
+              ).toList());
+
+              return Column(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        color: primaryColor,
+                        child: Center(
+                          child: DropdownButton(
+                            dropdownColor: primaryColor,
+                            style: const TextStyle(color: Colors.white),
+                            items: dropDownItems,
+                            onChanged: (value) {
+                              // transaction = null;
+                              // if (value == 'All') {
+                              //   transaction = DatabaseService().getTransaction(
+                              //       FirebaseAuth.instance.currentUser!.uid);
+                              // } else {
+                              //   transaction = DatabaseService().getTransaction(
+                              //       FirebaseAuth.instance.currentUser!.uid,
+                              //       groupIdN: value);
+                              // }
+
+                              setState(() {
+                                dropDownValue = value;
+                              });
+                            },
+                            value: dropDownValue,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: StreamBuilder(
+                        stream: dropDownValue == 'All'
+                            ? DatabaseService().getTransaction(
+                                FirebaseAuth.instance.currentUser!.uid)
+                            : DatabaseService().getTransaction(
+                                FirebaseAuth.instance.currentUser!.uid,
+                                groupIdN: dropDownValue),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            //if transaction has happened
+                            if (snapshot.data!.docs.length != 0) {
+                              final transactionData = snapshot.data!.docs;
+                              return ListView.builder(
+                                reverse: true,
+                                itemBuilder: (context, index) {
+                                  return TransactionTile(
+                                      transactionData: transactionData[index],
+                                      userId: HelperFunctions.userId!);
+                                },
+                                itemCount: transactionData.length,
+                              );
+                            } else {
+                              return Center(
+                                child: transText(text: 'No transaction'),
+                              );
+                            }
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: transText(text: 'Network error'),
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               );
             }
-          } else if (snapshot.hasError) {
-            return Center(
-              child: transText(text: 'Network error'),
-            );
           } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return CircularProgressIndicator();
           }
-        },
-      ),
-    );
+        });
   }
 
   Widget _buildScreen() {

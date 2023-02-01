@@ -213,7 +213,15 @@ class DatabaseService {
   }
 
   //get transaction details of given user user
-  getTransaction(String userId) {
+  Stream? getTransaction(String userId, {String? groupIdN}) {
+    if (groupIdN != null) {
+      return userCollection
+          .doc(userId)
+          .collection('transaction')
+          .where('groupId', isEqualTo: groupIdN)
+          .orderBy('time', descending: true)
+          .snapshots();
+    }
     return userCollection
         .doc(userId)
         .collection('transaction')
