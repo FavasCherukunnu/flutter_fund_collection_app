@@ -217,6 +217,10 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  Future getUserData() async {
+    HelperFunctions.userId = await HelperFunctions.getUserIdFromSF();
+  }
+
   register() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -234,6 +238,10 @@ class _SignUpPageState extends State<SignUpPage> {
           await HelperFunctions.saveUserEmailSF(emailCtlr.text);
           await HelperFunctions.saveUserNameSF(usernameCtlr.text);
           await HelperFunctions.saveUserIdSF('${authService.uid}');
+          print(authService.uid);
+          await getUserData();
+          print(HelperFunctions.userId);
+
           Navigator.pushReplacementNamed(context, '/homeScreen');
         } else {
           setState(() {

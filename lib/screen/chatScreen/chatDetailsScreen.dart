@@ -186,8 +186,11 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                     radius: 25,
                                     backgroundColor: primaryColor,
                                   ),
-                                  title:
-                                      transText(text: getName(members[index])),
+                                  title: transText(
+                                      text: getName(members[index]),
+                                      color: isAdmin(members[index])
+                                          ? primaryColor
+                                          : null),
                                   trailing: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: StreamBuilder(

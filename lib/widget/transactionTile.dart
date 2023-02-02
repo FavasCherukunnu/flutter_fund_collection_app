@@ -22,6 +22,7 @@ class TransactionTile extends StatelessWidget {
     _isAdmin = transactionData['isAdmin'];
     String senterIdN = transactionData['senterId'];
     own = userId == getId(senterIdN);
+    print(getId(senterIdN));
 
     DateTime dateTime =
         DateTime.fromMillisecondsSinceEpoch(transactionData['time']);

@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Stream? groups;
   bool _isLoading = false;
   String groupName = "";
-  String dropDownValue = 'daqaqwVIjilVg84Mpxfx_boys';
+  String dropDownValue = 'All';
 
   //bottom navigation index
   int _bottomNavValue = 0;
@@ -476,6 +476,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             //if transaction has happened
                             if (snapshot.data!.docs.length != 0) {
                               final transactionData = snapshot.data!.docs;
+                              print('userdata is ${HelperFunctions.userId}');
                               return ListView.builder(
                                 reverse: true,
                                 itemBuilder: (context, index) {
