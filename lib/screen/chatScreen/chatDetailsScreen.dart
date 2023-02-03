@@ -5,6 +5,7 @@ import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/models/groupDetails.dart';
 import 'package:trans_pay/models/userDetails.dart';
+import 'package:trans_pay/screen/chatScreen/addMembers.dart';
 import 'package:trans_pay/services/databaseService.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
@@ -37,6 +38,14 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     // final totalAmount = DatabaseService().getTotalAmountInfo(widget.groupId);
   }
 
+  showAddMembers()async{
+
+    Navigator.push(context,MaterialPageRoute(builder: (context) => AddMembersScreen(
+      groupId:widget.groupId
+    ),));
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     userdata = Provider.of<UserClass>(context);
@@ -53,6 +62,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
       backgroundColor: primaryBgColor,
       appBar: AppBar(
         elevation: 0,
+
+        actions: [
+          IconButton(onPressed: (){
+            showAddMembers();
+          }, icon: Icon(Icons.person_add)),
+        ],
       ),
       body: StreamBuilder(
           stream: groupInfo,

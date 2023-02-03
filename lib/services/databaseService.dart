@@ -212,6 +212,11 @@ class DatabaseService {
         .snapshots();
   }
 
+  Stream<QuerySnapshot> searchMembers(String keyword){
+    return userCollection.where('username',isEqualTo: keyword).snapshots();
+    //.where('email',isEqualTo: keyword).where('uid',isEqualTo: keyword)
+  }
+
   //get transaction details of given user user
   Stream? getTransaction(String userId, {String? groupIdN}) {
     if (groupIdN != null) {
