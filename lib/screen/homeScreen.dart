@@ -11,6 +11,7 @@ import 'package:trans_pay/services/authentication.dart';
 import 'package:trans_pay/widget/transactionTile.dart';
 
 import '../services/databaseService.dart';
+import '../widget/dateTile.dart';
 import '../widget/groupTIle.dart';
 import '../widget/widget.dart';
 
@@ -472,17 +473,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                 FirebaseAuth.instance.currentUser!.uid,
                                 groupIdN: dropDownValue),
                         builder: (context, snapshot) {
+                          DateTime prevDay;
+                          DateTime currentDay;
+
                           if (snapshot.hasData) {
                             //if transaction has happened
                             if (snapshot.data!.docs.length != 0) {
                               final transactionData = snapshot.data!.docs;
-                              print('userdata is ${HelperFunctions.userId}');
                               return ListView.builder(
                                 reverse: true,
                                 itemBuilder: (context, index) {
-                                  return TransactionTile(
-                                      transactionData: transactionData[index],
-                                      userId: HelperFunctions.userId!);
+                                  currentDay =
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                          transactionData[index]['time']);
+                                  prevDay = DateTime.fromMillisecondsSinceEpoch(
+                                      transactionData[index == 0
+                                          ? index
+                                          : index - 1]['time']);
+                                  Duration diff =
+                                      currentDay.difference(prevDay);
+
+                                  bool isChanged =
+                                      (diff.inDays > 1 || diff.inDays < -1) ||
+                                              currentDay.day != prevDay.day
+                                          ? true
+                                          : false;
+                                  return Column(
+                                    children: [
+                                      index == transactionData.length - 1
+                                          ? dateTile(
+                                              text:
+                                                  '${currentDay.day}-${currentDay.month}-${currentDay.year}')
+                                          : const SizedBox.shrink(),
+                                      TransactionTile(
+                                          transactionData:
+                                              transactionData[index],
+                                          userId: HelperFunctions.userId!),
+                                      isChanged
+                                          ? dateTile(
+                                              text:
+                                                  '${prevDay.day}-${prevDay.month}-${prevDay.year}')
+                                          : const SizedBox.shrink(),
+                                    ],
+                                  );
                                 },
                                 itemCount: transactionData.length,
                               );
