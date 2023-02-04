@@ -83,7 +83,7 @@ class DatabaseService {
   }
 
 // get total amount transacted in group
-  amountDetails(String groupId) {
+  Stream<QuerySnapshot<Map<String, dynamic>>> amountDetails(String groupId) {
     // double totalAmount = 0;
     // final collection = await
     return groupCollection.doc(groupId).collection('AmountDetails').snapshots();
@@ -101,12 +101,29 @@ class DatabaseService {
   //add total amount of a member to database of group
 
   storeAmount(String groupId, String senterIdN, double amount) async {
-    await groupCollection
+    final docref = await groupCollection
         .doc(groupId)
         .collection('AmountDetails')
         .doc(getId(senterIdN))
-        .set(
-            {'depositAmount': 0, 'memberId': senterIdN, 'withdrawAmount': 0.0});
+        .get();
+    if (docref.exists) {
+      await groupCollection
+          .doc(groupId)
+          .collection('AmountDetails')
+          .doc(getId(senterIdN))
+          .update({'isRemoved': false});
+    } else {
+      await groupCollection
+          .doc(groupId)
+          .collection('AmountDetails')
+          .doc(getId(senterIdN))
+          .set({
+        'depositAmount': 0,
+        'memberId': senterIdN,
+        'withdrawAmount': 0.0,
+        'isRemoved': false
+      });
+    }
   }
 
   joinGroup(
@@ -125,6 +142,13 @@ class DatabaseService {
     await groupCollection.doc(groupId).update({
       'members': FieldValue.arrayRemove(['${userId}_$username'])
     });
+
+    await groupCollection
+        .doc(groupId)
+        .collection('AmountDetails')
+        .doc(userId)
+        .update({'isRemoved': true});
+
     await userCollection.doc(userId).update({
       'groups': FieldValue.arrayRemove(['${groupId}_$groupName'])
     });

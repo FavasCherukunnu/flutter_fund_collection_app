@@ -30,6 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ScrollController listViewController = ScrollController();
   Stream? messages;
   Stream? totalAmount;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? amountDetailsStream;
   DocumentSnapshot? groupDetails;
   bool _isChatLoaded = false;
   GroupType groupType = GroupType();
@@ -47,6 +48,7 @@ class _ChatScreenState extends State<ChatScreen> {
     //getting group details
     groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
     totalAmount = DatabaseService().amountDetails(widget.groupId);
+    amountDetailsStream = DatabaseService().amountDetails(widget.groupId);
     groupInfo = groupDetails!.data() as Map;
     setState(() {
       groupType.setGroupType = groupInfo['groupType'];
@@ -210,135 +212,168 @@ class _ChatScreenState extends State<ChatScreen> {
     return null;
   }
 
-  Column chatSection() {
-    return Column(
-      children: [
-        Flexible(
-          child: _isChatLoaded
-              ? StreamBuilder(
-                  stream: messages,
-                  builder: (context, AsyncSnapshot snapshot) {
-                    final groupInfo = groupDetails!.data() as Map;
-                    DateTime prevDay;
-                    DateTime currentDay;
+  chatSection() {
+    return StreamBuilder(
+        stream: amountDetailsStream,
+        builder: (context, snapshotAmount) {
+          if (snapshotAmount.hasData) {
+            final userDetails = snapshotAmount.data!.docs;
+            return Column(
+              children: [
+                Flexible(
+                  child: _isChatLoaded
+                      ? StreamBuilder(
+                          stream: messages,
+                          builder: (context, AsyncSnapshot snapshot) {
+                            final groupInfo = groupDetails!.data() as Map;
+                            DateTime prevDay;
+                            DateTime currentDay;
 
-                    if (snapshot.hasData) {
-                      final data = snapshot.data.docs;
+                            if (snapshot.hasData &&
+                                snapshot.data.docs.isNotEmpty) {
+                              final data = snapshot.data.docs;
 
-                      return ListView.builder(
-                        itemBuilder: (context, index) {
-                          //determine new day
-                          currentDay = DateTime.fromMillisecondsSinceEpoch(
-                              data[index]['time']);
-                          prevDay = DateTime.fromMillisecondsSinceEpoch(
-                              data[index == 0 ? index : index - 1]['time']);
-                          Duration diff = currentDay.difference(prevDay);
+                              return ListView.builder(
+                                itemBuilder: (context, index) {
+                                  //determine new day
 
-                          bool isChanged =
-                              (diff.inDays > 1 || diff.inDays < -1) ||
-                                      currentDay.day != prevDay.day
-                                  ? true
-                                  : false;
+                                  QueryDocumentSnapshot? user;
+                                  userDetails.forEach((e) {
+                                    if (e['memberId'] ==
+                                        data[index]['senterId']) {
+                                      user = e;
+                                    }
+                                  });
 
-                          return Column(
-                            children: [
-                              index == data.length - 1
-                                  ? dateTile(
-                                      text:
-                                          '${currentDay.day}-${currentDay.month}-${currentDay.year}')
-                                  : const SizedBox.shrink(),
-                              MessageTile(
-                                  amount: data[index]['amount'],
-                                  isSenter:
-                                      checkSenter(data[index]['senterId']),
-                                  time: data[index]['time'],
-                                  senderName: getName(data[index]['senterId']),
-                                  isAdmin: isAdmin(
-                                      senterIDN: data[index]['senterId']),
-                                  groupType: groupType.getGroupType,
-                                  isWithdraw: data[index]['isWithdraw']),
-                              isChanged
-                                  ? dateTile(
-                                      text:
-                                          '${prevDay.day}-${prevDay.month}-${prevDay.year}')
-                                  : const SizedBox.shrink(),
-                            ],
-                          );
-                        },
-                        itemCount: data.length,
-                        reverse: true,
-                        controller: listViewController,
-                      );
-                    } else {
-                      return const CircularProgressIndicator();
-                    }
-                  },
-                )
-              : const CircularProgressIndicator(),
-        ),
-        _isChatLoaded
-            ? StreamBuilder(
-                stream: totalAmount,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    totalAmountDetails.setValues(snapshot.data.docs);
+                                  currentDay =
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                          data[index]['time']);
+                                  prevDay = DateTime.fromMillisecondsSinceEpoch(
+                                      data[index == 0 ? index : index - 1]
+                                          ['time']);
+                                  Duration diff =
+                                      currentDay.difference(prevDay);
 
-                    if (totalAmountDetails.isdebitable(
-                        amount: amountDetails.text.isEmpty
-                            ? null
-                            : double.parse(amountDetails.text))) {
-                      errorText = '';
-                    } else {
-                      errorText = 'No Money In Group';
-                    }
+                                  bool isChanged =
+                                      (diff.inDays > 1 || diff.inDays < -1) ||
+                                              currentDay.day != prevDay.day
+                                          ? true
+                                          : false;
 
-                    return Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(5, 10, 5, 5),
-                          padding: const EdgeInsets.fromLTRB(15, 5, 5, 5),
-                          decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                            color: Colors.white,
-                          ),
-                          child: Row(
-                            children: [
-                              Flexible(
-                                child: TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  controller: amountDetails,
-                                  // onSubmitted: (value) {
+                                  return Column(
+                                    children: [
+                                      index == data.length - 1
+                                          ? dateTile(
+                                              text:
+                                                  '${currentDay.day}-${currentDay.month}-${currentDay.year}')
+                                          : const SizedBox.shrink(),
+                                      MessageTile(
+                                          amount: data[index]['amount'],
+                                          isSenter: checkSenter(
+                                              data[index]['senterId']),
+                                          time: data[index]['time'],
+                                          senderName: user!['isRemoved']
+                                              ? 'Unknown'
+                                              : getName(
+                                                  data[index]['senterId']),
+                                          isAdmin: isAdmin(
+                                              senterIDN: data[index]
+                                                  ['senterId']),
+                                          groupType: groupType.getGroupType,
+                                          isWithdraw: data[index]
+                                              ['isWithdraw']),
+                                      isChanged
+                                          ? dateTile(
+                                              text:
+                                                  '${prevDay.day}-${prevDay.month}-${prevDay.year}')
+                                          : const SizedBox.shrink(),
+                                    ],
+                                  );
+                                },
+                                itemCount: data.length,
+                                reverse: true,
+                                controller: listViewController,
+                              );
+                            } else {
+                              return const CircularProgressIndicator();
+                            }
+                          },
+                        )
+                      : const CircularProgressIndicator(),
+                ),
+                _isChatLoaded
+                    ? StreamBuilder(
+                        stream: totalAmount,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            totalAmountDetails.setValues(snapshot.data.docs);
 
-                                  // },
-                                  style: const TextStyle(
-                                    fontFamily: 'SofiSans',
-                                    letterSpacing: 1,
+                            if (totalAmountDetails.isdebitable(
+                                amount: amountDetails.text.isEmpty
+                                    ? null
+                                    : double.parse(amountDetails.text))) {
+                              errorText = '';
+                            } else {
+                              errorText = 'No Money In Group';
+                            }
+
+                            return Column(
+                              children: [
+                                Container(
+                                  margin:
+                                      const EdgeInsets.fromLTRB(5, 10, 5, 5),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(15, 5, 5, 5),
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(20)),
+                                    color: Colors.white,
                                   ),
-                                  //controller: ,
-                                  decoration: const InputDecoration.collapsed(
-                                    hintText: 'Enter Amount',
-                                    hintStyle: TextStyle(
-                                      fontFamily: 'SofiSans',
-                                      letterSpacing: 1,
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Flexible(
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.number,
+                                          controller: amountDetails,
+                                          // onSubmitted: (value) {
+
+                                          // },
+                                          style: const TextStyle(
+                                            fontFamily: 'SofiSans',
+                                            letterSpacing: 1,
+                                          ),
+                                          //controller: ,
+                                          decoration:
+                                              const InputDecoration.collapsed(
+                                            hintText: 'Enter Amount',
+                                            hintStyle: TextStyle(
+                                              fontFamily: 'SofiSans',
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                          //focusNode: focusNode,
+                                          autofocus: false,
+                                        ),
+                                      ),
+                                      buildbottombutton()!
+                                    ],
                                   ),
-                                  //focusNode: focusNode,
-                                  autofocus: false,
                                 ),
-                              ),
-                              buildbottombutton()!
-                            ],
-                          ),
-                        ),
-                        transText(text: errorText, color: Colors.red),
-                      ],
-                    );
-                  } else {
-                    return SizedBox.shrink();
-                  }
-                })
-            : Container()
-      ],
-    );
+                                transText(text: errorText, color: Colors.red),
+                              ],
+                            );
+                          } else {
+                            return SizedBox.shrink();
+                          }
+                        })
+                    : Container()
+              ],
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
   }
 }
