@@ -3,17 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
+import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/models/groupDetails.dart';
+import 'package:trans_pay/models/loading.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/screen/chatScreen/addMembers.dart';
 import 'package:trans_pay/services/databaseService.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
   ChatDetailsScreen(
-      {super.key, required this.groupId, required this.groupType});
+      {super.key,
+      required this.groupId,
+      required this.groupType,
+      required this.adminIdN});
 
   String groupId;
   GroupType groupType;
+  String? adminIdN;
 
   @override
   State<ChatDetailsScreen> createState() => _ChatDetailsScreenState();
@@ -27,6 +33,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   Stream? groupInfo;
   Stream? amountDetails;
   late double totalAmount;
+  bool _fullLoaded = false;
 
   @override
   void initState() {
@@ -38,21 +45,41 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     // final totalAmount = DatabaseService().getTotalAmountInfo(widget.groupId);
   }
 
-  showAddMembers()async{
+  showAddMembers() async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddMembersScreen(groupId: widget.groupId),
+        ));
+  }
 
-    Navigator.push(context,MaterialPageRoute(builder: (context) => AddMembersScreen(
-      groupId:widget.groupId
-    ),));
-    
+  setFullLoaded() {
+    // notify the UI that the group details has been fully loaded
+    if (_fullLoaded == false) {
+      Future.delayed(Duration(seconds: 1)).whenComplete(() {
+        setState(() {
+          _fullLoaded = true;
+        });
+      });
+    }
+  }
+
+  late String adminIdN;
+
+  isAdmin(String userIdN) {
+    if (widget.adminIdN != null) {
+      if (getId(widget.adminIdN!) == getId(userIdN)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     userdata = Provider.of<UserClass>(context);
-
-    late String adminIdN;
-
-    isAdmin(String userIdN) => getId(adminIdN) == getId(userIdN) ? true : false;
 
     int getGroupType() {
       return widget.groupType.getGroupType;
@@ -62,11 +89,19 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
       backgroundColor: primaryBgColor,
       appBar: AppBar(
         elevation: 0,
-
         actions: [
-          IconButton(onPressed: (){
-            showAddMembers();
-          }, icon: Icon(Icons.person_add)),
+          Consumer(
+              //animation: loading,
+              builder: (context, _, child) {
+            return isAdmin(
+                    '${HelperFunctions.userId}_${HelperFunctions.userName}')
+                ? IconButton(
+                    onPressed: () {
+                      showAddMembers();
+                    },
+                    icon: const Icon(Icons.person_add))
+                : SizedBox.shrink();
+          }),
         ],
       ),
       body: StreamBuilder(
@@ -79,6 +114,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
               adminIdN = admin;
               String groupName = group['groupName'];
               final members = group['members'];
+              // setFullLoaded();
 
               return Column(
                 children: [

@@ -35,7 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
   GroupType groupType = GroupType();
   AmountDetails totalAmountDetails = AmountDetails();
   String errorText = '';
-
+  dynamic groupInfo;
   @override
   void initState() {
     // TODO: implement initState
@@ -47,7 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
     //getting group details
     groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
     totalAmount = DatabaseService().amountDetails(widget.groupId);
-    final groupInfo = groupDetails!.data() as Map;
+    groupInfo = groupDetails!.data() as Map;
     setState(() {
       groupType.setGroupType = groupInfo['groupType'];
     });
@@ -79,9 +79,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => ChatDetailsScreen(
-                                groupId: widget.groupId,
-                                groupType: groupType,
-                              )));
+                              groupId: widget.groupId,
+                              groupType: groupType,
+                              adminIdN: groupInfo['admin'])));
                 },
               ),
             ],

@@ -219,6 +219,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future getUserData() async {
     HelperFunctions.userId = await HelperFunctions.getUserIdFromSF();
+    HelperFunctions.userName = await HelperFunctions.getUserNameFromSF();
   }
 
   register() async {

@@ -79,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future getUserData() async {
     HelperFunctions.userId = await HelperFunctions.getUserIdFromSF();
+    HelperFunctions.userName = await HelperFunctions.getUserNameFromSF();
   }
 
   @override

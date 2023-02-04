@@ -212,9 +212,26 @@ class DatabaseService {
         .snapshots();
   }
 
-  Stream<QuerySnapshot> searchMembers(String keyword){
-    return userCollection.where('username',isEqualTo: keyword).snapshots();
-    //.where('email',isEqualTo: keyword).where('uid',isEqualTo: keyword)
+  Future<List> searchMembers(String keyword) async {
+    final uNameEqualList =
+        await userCollection.where('username', isEqualTo: keyword).get();
+    final emailEaualList =
+        await userCollection.where('email', isEqualTo: keyword).get();
+    final uIdEqualList =
+        await userCollection.where('uid', isEqualTo: keyword).get();
+
+    List finalList = [];
+    finalList.addAll(uNameEqualList.docs);
+    finalList.addAll(emailEaualList.docs);
+    finalList.addAll(uIdEqualList.docs);
+
+    return finalList;
+
+    // return userCollection
+    // .where(FieldPath(['username', 'email', 'uid']), whereIn: [keyword])
+    // .where('email', isEqualTo: keyword)
+    // .where('uid', isEqualTo: keyword)
+    // .snapshots();
   }
 
   //get transaction details of given user user

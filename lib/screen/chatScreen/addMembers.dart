@@ -5,7 +5,7 @@ import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/services/databaseService.dart';
 
 class AddMembersScreen extends StatefulWidget {
-  AddMembersScreen({super.key,required this.groupId});
+  AddMembersScreen({super.key, required this.groupId});
 
   String groupId;
 
@@ -14,8 +14,10 @@ class AddMembersScreen extends StatefulWidget {
 }
 
 class _AddMembersScreenState extends State<AddMembersScreen> {
-  String? memberName='';
-  Stream? groupInfo ;
+  String memberName = '';
+  Stream? groupInfo;
+  bool _isSearching = false;
+  List dataArray = [];
 
   @override
   void initState() {
@@ -24,7 +26,7 @@ class _AddMembersScreenState extends State<AddMembersScreen> {
     groupInfo = DatabaseService().getGroupInfoStream(widget.groupId);
   }
 
-  checkMembership(List groupMembers,String userIdN){
+  checkMembership(List groupMembers, String userIdN) {
     if (groupMembers.contains('$userIdN')) {
       return true;
     } else {
@@ -32,91 +34,105 @@ class _AddMembersScreenState extends State<AddMembersScreen> {
     }
   }
 
+  isAdmin(String adminIdN, String userIdN) =>
+      getId(adminIdN) == getId(userIdN) ? true : false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: transText(text: 'Add Members'),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            child: TextField(
-              decoration: const InputDecoration(
+        appBar: AppBar(
+          title: transText(text: 'Add Members'),
+        ),
+        body: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              child: TextField(
+                decoration: const InputDecoration(
                   focusedBorder: UnderlineInputBorder(
-                    borderSide:
-                        BorderSide(color: primaryBgColor, width: 0.5),
+                    borderSide: BorderSide(color: primaryBgColor, width: 0.5),
                   ),
                   border: InputBorder.none,
                   hintText: 'Search members...',
-              ),
-              onChanged: (value) {
-                setState(() {
+                ),
+                onChanged: (value) {
                   memberName = value;
-                });
-              },
+                  DatabaseService().searchMembers(memberName).then((value) {
+                    dataArray = value;
+                    final ids = Set();
+                    dataArray.retainWhere((element) => ids.add(element.id));
+                    // dataArray = data.toSet().toList();
+                    setState(() {
+                      _isSearching = false;
+                    });
+                  });
+                },
+              ),
             ),
-          ),
-          Expanded(
-            child: StreamBuilder(
-              stream: memberName!.isNotEmpty  ? DatabaseService().searchMembers(memberName!):null,
-              builder: (context, snapshot) {
-                
-                if(snapshot.hasData){
-                 final dataArray = snapshot.data!.docs;
-          
-                 if(dataArray.length >0){
-                  return ListView.builder(
-                      itemBuilder: (context, index) {
-            
-                        final data = dataArray[index];
-            
-                        return ListTile(
-                          leading: CircleAvatar(
-                            child: transText(text: data['username'][0]),
-                            radius: 25,
-                          ),
-                          title: transText(text: data['username']),
-                          subtitle: transText(text: data['uid']),
-                          trailing: StreamBuilder(
-                            stream: groupInfo,
-                            builder: (context,snapshot) {  
-                              
-                              if(snapshot.hasData){
+            Expanded(
+                child: _isSearching == false
+                    ? ListView.builder(
+                        itemBuilder: (context, index) {
+                          final data = dataArray[index];
 
-                                final group = snapshot.data;
-                                String groupName = group['groupName'];
-                                print(groupName);
-                                return ElevatedButton(onPressed: (){}, child:
-                                checkMembership(group[''], userIdN) transText(text: 'add') );
-                                
-                              }else{
-                                return SizedBox.shrink();
-                              }
-
-                            },
-                          ),
-                        );
-                      
-                      },
-                      itemCount: dataArray.length,
-                  );
-                }else{
-                  return Center(child:
-                  transText(text: 'no user found'));
-                }
-                }else{
-                  return const  Center(child: CircularProgressIndicator());
-                }
-            
-                
-              
-              },
-            ),
-          )
-        ],
-      )
-    );
+                          if (dataArray.isNotEmpty) {
+                            return StreamBuilder(
+                                stream: groupInfo,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    final group = snapshot.data;
+                                    return !isAdmin(group['admin'],
+                                            '${data['uid']}_${data['username']}')
+                                        ? ListTile(
+                                            leading: CircleAvatar(
+                                              radius: 25,
+                                              child: transText(
+                                                  text: data['username'][0]),
+                                            ),
+                                            title: transText(
+                                                text: data['username']),
+                                            subtitle: transText(
+                                                text: data['uid'], size: 10),
+                                            trailing: ElevatedButton(
+                                                onPressed: () async {
+                                                  checkMembership(
+                                                          group['members'],
+                                                          '${data['uid']}_${data['username']}')
+                                                      ? await DatabaseService()
+                                                          .leftFromeGroup(
+                                                              group['groupId'],
+                                                              data['uid'],
+                                                              data['username'],
+                                                              group[
+                                                                  'groupName'])
+                                                      : await DatabaseService()
+                                                          .joinGroup(
+                                                              group['groupId'],
+                                                              data['uid'],
+                                                              data['username'],
+                                                              group[
+                                                                  'groupName']);
+                                                },
+                                                child: checkMembership(
+                                                        group['members'],
+                                                        '${data['uid']}_${data['username']}')
+                                                    ? transText(text: 'remove')
+                                                    : transText(text: 'add')))
+                                        : const SizedBox.shrink();
+                                  } else {
+                                    return const SizedBox.shrink();
+                                  }
+                                });
+                          } else {
+                            return Center(
+                              child: transText(text: 'No users found'),
+                            );
+                          }
+                        },
+                        itemCount: dataArray.length,
+                      )
+                    : const Center(child: CircularProgressIndicator()))
+          ],
+        ));
   }
 }
