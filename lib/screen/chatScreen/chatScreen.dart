@@ -237,6 +237,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 itemBuilder: (context, index) {
                                   //determine new day
 
+                                  //checking the user is removed or not
                                   QueryDocumentSnapshot? user;
                                   userDetails.forEach((e) {
                                     if (e['memberId'] ==
@@ -267,21 +268,50 @@ class _ChatScreenState extends State<ChatScreen> {
                                               text:
                                                   '${currentDay.day}-${currentDay.month}-${currentDay.year}')
                                           : const SizedBox.shrink(),
-                                      MessageTile(
-                                          amount: data[index]['amount'],
-                                          isSenter: checkSenter(
-                                              data[index]['senterId']),
-                                          time: data[index]['time'],
-                                          senderName: user!['isRemoved']
-                                              ? 'Unknown'
-                                              : getName(
-                                                  data[index]['senterId']),
-                                          isAdmin: isAdmin(
-                                              senterIDN: data[index]
-                                                  ['senterId']),
-                                          groupType: groupType.getGroupType,
-                                          isWithdraw: data[index]
-                                              ['isWithdraw']),
+                                      GestureDetector(
+                                        onLongPress: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return StatefulBuilder(
+                                                builder: (context, setState) {
+                                                  final MessageAmount
+                                                      messageAmount1 =
+                                                      MessageAmount()
+                                                        ..setValues(data,
+                                                            startPosition:
+                                                                index,
+                                                            endPosition:
+                                                                data.length);
+
+                                                  return SimpleDialog(
+                                                    children: [
+                                                      Text(messageAmount1
+                                                          .credited
+                                                          .toString())
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: MessageTile(
+                                            amount: data[index]['amount'],
+                                            isSenter: checkSenter(
+                                                data[index]['senterId']),
+                                            time: data[index]['time'],
+                                            senderName: user!['isRemoved']
+                                                ? 'Unknown'
+                                                : getName(
+                                                    data[index]['senterId']),
+                                            isAdmin: isAdmin(
+                                                senterIDN: data[index]
+                                                    ['senterId']),
+                                            groupType: groupType.getGroupType,
+                                            isWithdraw: data[index]
+                                                ['isWithdraw']),
+                                      ),
                                       isChanged
                                           ? dateTile(
                                               text:
