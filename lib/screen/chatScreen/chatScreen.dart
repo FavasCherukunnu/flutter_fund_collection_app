@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_upi_payment/easy_upi_payment.dart';
 import 'package:flutter/material.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/helper/helper_function.dart';
@@ -37,6 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
   AmountDetails totalAmountDetails = AmountDetails();
   String errorText = '';
   dynamic groupInfo;
+  final payKey = GlobalKey<FormState>();
   @override
   void initState() {
     // TODO: implement initState
@@ -144,15 +146,27 @@ class _ChatScreenState extends State<ChatScreen> {
         FocusScopeNode currentFocus = FocusScope.of(context);
         //got to bottom of listview
 
-        if (amount.isNotEmpty &&
+        if(payKey.currentState!.validate()){
+          if (amount.isNotEmpty &&
             isNumeric(amount) &&
             double.parse(amount) >= 0) {
           if (!currentFocus.hasPrimaryFocus) {
             currentFocus.unfocus();
           }
-          amountDetails.clear();
-          await sentMessage(amount, false);
+          final res = await EasyUpiPaymentPlatform.instance.startPayment(
+            EasyUpiPaymentModel(
+                payeeVpa: '9895410700',
+                payeeName: 'Nisar',
+                amount: double.parse(amount),
+                description: 'Testing payment',
+              ),
+            );
+            amountDetails.clear();
+            // await sentMessage(amount, false);
+          }
         }
+
+        
         // listViewController.animateTo(
         //     listViewController.position.minScrollExtent,
         //     duration: const Duration(milliseconds: 500),
@@ -362,27 +376,35 @@ class _ChatScreenState extends State<ChatScreen> {
                                   child: Row(
                                     children: [
                                       Flexible(
-                                        child: TextFormField(
-                                          keyboardType: TextInputType.number,
-                                          controller: amountDetails,
-                                          // onSubmitted: (value) {
-
-                                          // },
-                                          style: const TextStyle(
-                                            fontFamily: 'SofiSans',
-                                            letterSpacing: 1,
-                                          ),
-                                          //controller: ,
-                                          decoration:
-                                              const InputDecoration.collapsed(
-                                            hintText: 'Enter Amount',
-                                            hintStyle: TextStyle(
+                                        child: Form(
+                                          key: payKey,
+                                          child: TextFormField(
+                                            validator: (value) {
+                                              if(value!.isEmpty){
+                                                return 'Please Enter the amount';
+                                              }
+                                            },
+                                            keyboardType: TextInputType.number,
+                                            controller: amountDetails,
+                                            // onSubmitted: (value) {
+                                        
+                                            // },
+                                            style: const TextStyle(
                                               fontFamily: 'SofiSans',
                                               letterSpacing: 1,
                                             ),
+                                            //controller: ,
+                                            decoration:
+                                                const InputDecoration.collapsed(
+                                              hintText: 'Enter Amount',
+                                              hintStyle: TextStyle(
+                                                fontFamily: 'SofiSans',
+                                                letterSpacing: 1,
+                                              ),
+                                            ),
+                                            //focusNode: focusNode,
+                                            autofocus: false,
                                           ),
-                                          //focusNode: focusNode,
-                                          autofocus: false,
                                         ),
                                       ),
                                       buildbottombutton()!
