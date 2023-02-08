@@ -146,27 +146,28 @@ class _ChatScreenState extends State<ChatScreen> {
         FocusScopeNode currentFocus = FocusScope.of(context);
         //got to bottom of listview
 
-        if(payKey.currentState!.validate()){
+        if (payKey.currentState!.validate()) {
           if (amount.isNotEmpty &&
-            isNumeric(amount) &&
-            double.parse(amount) >= 0) {
-          if (!currentFocus.hasPrimaryFocus) {
-            currentFocus.unfocus();
-          }
-          final res = await EasyUpiPaymentPlatform.instance.startPayment(
-            EasyUpiPaymentModel(
-                payeeVpa: '9895410700',
-                payeeName: 'Nisar',
-                amount: double.parse(amount),
-                description: 'Testing payment',
-              ),
-            );
+              isNumeric(amount) &&
+              double.parse(amount) >= 0) {
+            if (!currentFocus.hasPrimaryFocus) {
+              currentFocus.unfocus();
+            }
+            final res = await EasyUpiPaymentPlatform.instance.startPayment(
+              EasyUpiPaymentModel(
+                  payeeVpa: '7994020923@okbizicici',
+                  payeeName: 'favas',
+                  amount: double.parse(amount),
+                  description: 'transpay testing',
+                ),
+              );
+              print(res!.transactionId);
+              print(res);
             amountDetails.clear();
             // await sentMessage(amount, false);
           }
         }
 
-        
         // listViewController.animateTo(
         //     listViewController.position.minScrollExtent,
         //     duration: const Duration(milliseconds: 500),
@@ -380,14 +381,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                           key: payKey,
                                           child: TextFormField(
                                             validator: (value) {
-                                              if(value!.isEmpty){
+                                              if (value!.isEmpty) {
                                                 return 'Please Enter the amount';
                                               }
                                             },
                                             keyboardType: TextInputType.number,
                                             controller: amountDetails,
                                             // onSubmitted: (value) {
-                                        
+
                                             // },
                                             style: const TextStyle(
                                               fontFamily: 'SofiSans',
