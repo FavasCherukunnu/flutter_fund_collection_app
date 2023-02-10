@@ -45,6 +45,8 @@ class DatabaseService {
       "members": [],
       'groupType': grouptype,
       "groupId": "",
+      "upiId":"",
+      "upiName":"",
       "recentMessage": "",
       "recentMessageSender": "",
     });
@@ -61,6 +63,10 @@ class DatabaseService {
       "groups":
           FieldValue.arrayUnion(["${groupDocumentReference.id}_$groupName"])
     });
+  }
+
+  updateUpiValues({required String groupId,required String upiId, required String upiName}){
+    groupCollection.doc(groupId).update({'upiId':upiId,'upiName':upiName});
   }
 
   getGroupInfo(String groupId) async {

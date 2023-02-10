@@ -83,6 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => ChatDetailsScreen(
+                              groupName: widget.groupName,
                               groupId: widget.groupId,
                               groupType: groupType,
                               adminIdN: groupInfo['admin'])));
@@ -153,18 +154,20 @@ class _ChatScreenState extends State<ChatScreen> {
             if (!currentFocus.hasPrimaryFocus) {
               currentFocus.unfocus();
             }
-            final res = await EasyUpiPaymentPlatform.instance.startPayment(
-              EasyUpiPaymentModel(
-                  payeeVpa: '7994020923@okbizicici',
-                  payeeName: 'favas',
-                  amount: double.parse(amount),
-                  description: 'transpay testing',
-                ),
-              );
-              print(res!.transactionId);
-              print(res);
+            // groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
+            // final data = groupDetails!.data() as Map;
+            // final res = await EasyUpiPaymentPlatform.instance.startPayment(
+            //   EasyUpiPaymentModel(
+            //       payeeVpa: data['upiId'],
+            //       payeeName: data['upiName'],
+            //       amount: double.parse(amount),
+            //       description: 'transpay testing',
+            //     ),
+            //   );
+            //   print(res!.transactionId);
+            //   print(res);
             amountDetails.clear();
-            // await sentMessage(amount, false);
+            await sentMessage(amount, false);
           }
         }
 
@@ -339,7 +342,12 @@ class _ChatScreenState extends State<ChatScreen> {
                                 reverse: true,
                                 controller: listViewController,
                               );
-                            } else {
+                            }else if(snapshot.hasData&&!snapshot.data.docs.isNotEmpty){
+
+                              return Container();
+
+                            }
+                             else {
                               return const CircularProgressIndicator();
                             }
                           },

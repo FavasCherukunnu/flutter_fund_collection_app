@@ -1,11 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/constants/common.dart';
 import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/models/groupDetails.dart';
-import 'package:trans_pay/models/loading.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/screen/chatScreen/addMembers.dart';
 import 'package:trans_pay/services/databaseService.dart';
@@ -13,6 +11,7 @@ import 'package:trans_pay/services/databaseService.dart';
 class ChatDetailsScreen extends StatefulWidget {
   ChatDetailsScreen(
       {super.key,
+      required this.groupName,
       required this.groupId,
       required this.groupType,
       required this.adminIdN});
@@ -20,6 +19,7 @@ class ChatDetailsScreen extends StatefulWidget {
   String groupId;
   GroupType groupType;
   String? adminIdN;
+  String groupName;
 
   @override
   State<ChatDetailsScreen> createState() => _ChatDetailsScreenState();
@@ -53,6 +53,60 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
         ));
   }
 
+  showUpiDetails() async {
+    final upiIdctrl = TextEditingController();
+    final upiNamectrl = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, StepState) {
+          return SimpleDialog(
+            children: [
+              Container(
+                padding:
+                    EdgeInsets.only(top: 40, left: 25, right: 25, bottom: 10),
+                child: Form(
+                    child: Column(
+                  children: [
+                    transText(text: 'UPI ID'),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        //border: OutlineInputBorder(),
+                        hintText: 'Enter merchant upi id',
+                      ),
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    transText(text: 'Name'),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        //border: OutlineInputBorder(),
+                        hintText: 'Enter the name',
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    ElevatedButton(
+                        onPressed: () async {
+                          await DatabaseService().updateUpiValues(
+                              groupId: widget.groupId,
+                              upiId: upiIdctrl.text,
+                              upiName: upiNamectrl.text);
+                        },
+                        child: transText(text: 'Update'))
+                  ],
+                )),
+              )
+            ],
+          );
+        });
+      },
+    );
+  }
+
   setFullLoaded() {
     // notify the UI that the group details has been fully loaded
     if (_fullLoaded == false) {
@@ -75,6 +129,49 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
       }
     }
     return false;
+  }
+
+  showLeftGroupIndication() async {
+    switch(await showDialog(
+        context: context,
+        builder: ((context) {
+          return SimpleDialog(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                child: Column(
+                  children: [
+                    transText(text: 'Do you want to left from the group?'),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context,0);
+                            }, child: transText(text: 'No')),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context,1);
+                            }, child: transText(text: 'Yes'))
+                      ],
+                    )
+                  ],
+                ),
+              )
+            ],
+          );
+        }))){
+          case 0:
+            break;
+          case 1:
+            await DatabaseService().leftFromeGroup(widget.groupId, HelperFunctions.userId!, HelperFunctions.userName!, widget.groupName);
+            Navigator.pop(context);
+            Navigator.pop(context);
+
+
+        }
   }
 
   @override
@@ -102,6 +199,19 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                     icon: const Icon(Icons.person_add))
                 : SizedBox.shrink();
           }),
+          isAdmin('${HelperFunctions.userId}_${HelperFunctions.userName}')
+              ? IconButton(
+                  onPressed: () {
+                    showUpiDetails();
+                  },
+                  icon: Icon(Icons.payment))
+              : IconButton(
+                  onPressed: () {
+                    showLeftGroupIndication();
+                  },
+                  icon: Icon(Icons.exit_to_app),
+                  tooltip: 'left group',
+                )
         ],
       ),
       body: StreamBuilder(
@@ -335,7 +445,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                         prefixIcon: Icon(Icons.group),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 30,
                     ),
                     Row(
