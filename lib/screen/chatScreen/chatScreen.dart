@@ -30,6 +30,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   TextEditingController amountDetails = TextEditingController();
+  TextEditingController noteController= TextEditingController();
   String? userName;
   ScrollController listViewController = ScrollController();
   Stream? messages;
@@ -44,8 +45,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isUpiValid = true;
 
   final payKey = GlobalKey<FormState>();
-
-
 
   @override
   void initState() {
@@ -103,13 +102,13 @@ class _ChatScreenState extends State<ChatScreen> {
         body: chatSection());
   }
 
-  sentMessage(String amount, bool isWithdraw) async {
+  sentMessage(String amount,String message, bool isWithdraw) async {
     final groupInfo = groupDetails!.data() as Map;
     String? userName = await HelperFunctions.getUserNameFromSF();
     String senterIdN = '${widget.userId}_$userName';
     await DatabaseService().sentMessage(widget.groupName, widget.groupId,
         amount, senterIdN, DateTime.now(), getId(groupInfo['admin']),
-        isWithdraw: isWithdraw);
+        isWithdraw: isWithdraw,message: message);
   }
 
   getId(String data) {
@@ -152,6 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: transText(text: 'Pay'),
       onPressed: () async {
         final String amount = amountDetails.text;
+        final String message = noteController.text;
         FocusScopeNode currentFocus = FocusScope.of(context);
         //got to bottom of listview
 
@@ -165,39 +165,45 @@ class _ChatScreenState extends State<ChatScreen> {
             groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
             final data = groupDetails!.data() as Map;
 
-            try{
+            try {
               final res = await EasyUpiPaymentPlatform.instance.startPayment(
                 EasyUpiPaymentModel(
-                    payeeVpa: data['upiId'],
-                    payeeName: data['upiName'],
-                    amount: double.parse(amount),
-                    description: 'transpay testing',
-                  ),
-                );
+                  payeeVpa: data['upiId'],
+                  payeeName: data['upiName'],
+                  amount: double.parse(amount),
+                  description: 'transpay testing',
+                ),
+              );
               amountDetails.clear();
-              await sentMessage(amount, false);
-              if(res !=null){
+              noteController.clear();
+              await sentMessage(amount,message, false);
+              if (res != null) {
                 print(res.transactionId);
-              }else{
+              } else {
                 print('result is null');
               }
-            }catch(exception,subtrace){
+            } catch (exception, subtrace) {
               exception as EasyUpiPaymentException;
-              if(exception.type == EasyUpiPaymentExceptionType.unknownException){
+              if (exception.type ==
+                  EasyUpiPaymentExceptionType.unknownException) {
                 showSnackbar(context, Colors.red, 'Somthing went wrong !!!');
-              }else if(exception.type == EasyUpiPaymentExceptionType.cancelledException){
+              } else if (exception.type ==
+                  EasyUpiPaymentExceptionType.cancelledException) {
                 showSnackbar(context, Colors.red, 'You Cancelled payment!!!');
-              }else if(exception.type == EasyUpiPaymentExceptionType.appNotFoundException){
+              } else if (exception.type ==
+                  EasyUpiPaymentExceptionType.appNotFoundException) {
                 showSnackbar(context, Colors.red, 'App Not found!!!');
-              }else if(exception.type == EasyUpiPaymentExceptionType.failedException){
+              } else if (exception.type ==
+                  EasyUpiPaymentExceptionType.failedException) {
                 showSnackbar(context, Colors.red, 'Failed payment!!!');
-              }else if(exception.type == EasyUpiPaymentExceptionType.submittedException){
-                showSnackbar(context, Colors.red, 'payment is pending. if successfull approch admin!!!');
+              } else if (exception.type ==
+                  EasyUpiPaymentExceptionType.submittedException) {
+                showSnackbar(context, Colors.red,
+                    'payment is pending. if successfull approch admin!!!');
               }
               print('//////////////');
               print(exception.type);
             }
-            
           }
         }
 
@@ -213,6 +219,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return TextButton(
         onPressed: () async {
           final String amount = amountDetails.text;
+          final message = noteController.text;
           FocusScopeNode currentFocus = FocusScope.of(context);
           //got to bottom of listview
 
@@ -223,7 +230,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 currentFocus.unfocus();
               }
               amountDetails.clear();
-              await sentMessage(amount, true);
+              noteController.clear();
+              await sentMessage(amount,message, true);
             } else {
               setState(() {
                 errorText = 'No Money In Group';
@@ -345,20 +353,21 @@ class _ChatScreenState extends State<ChatScreen> {
                                           );
                                         },
                                         child: MessageTile(
-                                            amount: data[index]['amount'],
-                                            isSenter: checkSenter(
-                                                data[index]['senterId']),
-                                            time: data[index]['time'],
-                                            senderName: user!['isRemoved']
-                                                ? 'Unknown'
-                                                : getName(
-                                                    data[index]['senterId']),
-                                            isAdmin: isAdmin(
-                                                senterIDN: data[index]
-                                                    ['senterId']),
-                                            groupType: groupType.getGroupType,
-                                            isWithdraw: data[index]
-                                                ['isWithdraw']),
+                                          amount: data[index]['amount'],
+                                          isSenter: checkSenter(
+                                              data[index]['senterId']),
+                                          time: data[index]['time'],
+                                          senderName: user!['isRemoved']
+                                              ? 'Unknown'
+                                              : getName(
+                                                  data[index]['senterId']),
+                                          isAdmin: isAdmin(
+                                              senterIDN: data[index]
+                                                  ['senterId']),
+                                          groupType: groupType.getGroupType,
+                                          isWithdraw: data[index]['isWithdraw'],
+                                          message: data[index]['message'],
+                                        ),
                                       ),
                                       isChanged
                                           ? dateTile(
@@ -372,12 +381,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                 reverse: true,
                                 controller: listViewController,
                               );
-                            }else if(snapshot.hasData&&!snapshot.data.docs.isNotEmpty){
-
+                            } else if (snapshot.hasData &&
+                                !snapshot.data.docs.isNotEmpty) {
                               return Container();
-
-                            }
-                             else {
+                            } else {
                               return const CircularProgressIndicator();
                             }
                           },
@@ -400,58 +407,82 @@ class _ChatScreenState extends State<ChatScreen> {
                               errorText = 'No Money In Group';
                             }
 
-                            return Column(
-                              children: [
-                                Container(
-                                  margin:
-                                      const EdgeInsets.fromLTRB(5, 10, 5, 5),
-                                  padding:
-                                      const EdgeInsets.fromLTRB(15, 5, 5, 5),
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
-                                    color: Colors.white,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Flexible(
-                                        child: Form(
-                                          key: payKey,
-                                          child: TextFormField(
-                                            validator: (value) {
-                                              if (value!.isEmpty) {
-                                                return 'Please Enter the amount';
-                                              }
-                                            },
-                                            keyboardType: TextInputType.number,
-                                            controller: amountDetails,
-                                            // onSubmitted: (value) {
-
-                                            // },
-                                            style: const TextStyle(
-                                              fontFamily: 'SofiSans',
-                                              letterSpacing: 1,
+                            return SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Container(
+                                    margin:
+                                        const EdgeInsets.fromLTRB(5, 10, 5, 5),
+                                    padding:
+                                        const EdgeInsets.fromLTRB(15, 20, 5, 20),
+                                    decoration: const BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(20)),
+                                      color: Colors.white,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Form(
+                                            key: payKey,
+                                            child: Column(
+                                              children: [
+                                                TextFormField(
+                                                  maxLines: null,
+                                                  controller: noteController,
+                                                  textInputAction: TextInputAction.newline,
+                                                  decoration:
+                                                      const InputDecoration
+                                                          .collapsed(
+                                                    hintText:
+                                                        'Add Note(Optional)',
+                                                    hintStyle: TextStyle(
+                                                      fontFamily: 'SofiSans',
+                                                      letterSpacing: 1,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Divider(),
+                                                TextFormField(
+                                                  validator: (value) {
+                                                    if (value!.isEmpty) {
+                                                      return 'Please Enter the amount';
+                                                    }
+                                                  },
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  controller: amountDetails,
+                                                  // onSubmitted: (value) {
+                                            
+                                                  // },
+                                                  style: const TextStyle(
+                                                    fontFamily: 'SofiSans',
+                                                    letterSpacing: 1,
+                                                  ),
+                                                  //controller: ,
+                                                  decoration:
+                                                      const InputDecoration
+                                                          .collapsed(
+                                                    hintText: 'Enter Amount',
+                                                    hintStyle: TextStyle(
+                                                      fontFamily: 'SofiSans',
+                                                      letterSpacing: 1,
+                                                    ),
+                                                  ),
+                                                  //focusNode: focusNode,
+                                                  autofocus: false,
+                                                ),
+                                              ],
                                             ),
-                                            //controller: ,
-                                            decoration:
-                                                const InputDecoration.collapsed(
-                                              hintText: 'Enter Amount',
-                                              hintStyle: TextStyle(
-                                                fontFamily: 'SofiSans',
-                                                letterSpacing: 1,
-                                              ),
-                                            ),
-                                            //focusNode: focusNode,
-                                            autofocus: false,
                                           ),
                                         ),
-                                      ),
-                                      buildbottombutton()!
-                                    ],
+                                        buildbottombutton()!
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                transText(text: errorText, color: Colors.red),
-                              ],
+                                  transText(text: errorText, color: Colors.red),
+                                ],
+                              ),
                             );
                           } else {
                             return SizedBox.shrink();

@@ -14,7 +14,8 @@ class MessageTile extends StatelessWidget {
       required this.senderName,
       required this.isAdmin,
       required this.groupType,
-      required this.isWithdraw})
+      required this.isWithdraw,
+      required this.message})
       : super(key: key);
 
   String amount;
@@ -24,6 +25,7 @@ class MessageTile extends StatelessWidget {
   bool isAdmin;
   int groupType;
   bool isWithdraw;
+  String message;
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +67,18 @@ class MessageTile extends StatelessWidget {
                 ),
                 Container(
                     padding: isSenter
-                        ? EdgeInsets.only(right: 20)
+                        ? EdgeInsets.only(left: 20)
                         : EdgeInsets.only(left: 20),
                     child:
                         transText(text: amount, size: 25, color: Colors.white)),
+                message.isEmpty?SizedBox.shrink(): Padding(
+                  padding: const EdgeInsets.only(top: 5,bottom: 7,left: 10),
+                  child: transText(
+                      text:
+                          message,
+                      color: Colors.white,
+                      alignment: TextAlign.right),
+                ),
                 transText(text: formatted, color: Colors.white, size: 10)
               ],
             ),

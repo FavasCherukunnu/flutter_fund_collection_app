@@ -175,47 +175,47 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(
                         height: 10,
                       ),
-                      transText(text: 'Type', bold: true, size: 17),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Row(
-                            children: [
-                              Radio(
-                                value: GroupType.memberNonWithdrawal,
-                                groupValue: radioValue,
-                                onChanged: (value) {
-                                  setState(() {
-                                    radioValue = value!;
-                                  });
-                                },
-                              ),
-                              Text('AN'),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Radio(
-                                value: GroupType.memberWithdrawal,
-                                groupValue: radioValue,
-                                onChanged: (value) {
-                                  print(value);
-                                  setState(() {
-                                    radioValue = value!;
-                                  });
-                                },
-                              ),
-                              Text('AW'),
-                            ],
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
+                      // transText(text: 'Type', bold: true, size: 17),
+                      // const SizedBox(
+                      //   height: 10,
+                      // ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      //   children: [
+                      //     Row(
+                      //       children: [
+                      //         Radio(
+                      //           value: GroupType.memberNonWithdrawal,
+                      //           groupValue: radioValue,
+                      //           onChanged: (value) {
+                      //             setState(() {
+                      //               radioValue = value!;
+                      //             });
+                      //           },
+                      //         ),
+                      //         Text('AN'),
+                      //       ],
+                      //     ),
+                      //     Row(
+                      //       children: [
+                      //         Radio(
+                      //           value: GroupType.memberWithdrawal,
+                      //           groupValue: radioValue,
+                      //           onChanged: (value) {
+                      //             print(value);
+                      //             setState(() {
+                      //               radioValue = value!;
+                      //             });
+                      //           },
+                      //         ),
+                      //         Text('AW'),
+                      //       ],
+                      //     )
+                      //   ],
+                      // ),
+                      // SizedBox(
+                      //   height: 10,
+                      // ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [

@@ -60,12 +60,50 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (context, StepState) {
+        Stream? groupinfo1 = DatabaseService().getGroupInfoStream(widget.groupId);
+        return StatefulBuilder(builder: (context, setState) {
           return SimpleDialog(
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+                child: StreamBuilder(
+                  stream: groupinfo1,
+                  builder: (context, snapshot) {
+                    var upi = 'loading';
+                    var name = 'loading';
+                    if(snapshot.hasData){
+
+                      final data = snapshot.data;
+                      upi = data['upiId'];
+                      name = data['upiName'];
+                      setState;
+                    }
+                    return Column(
+                      children: [Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children:[
+                          transText(text:'UPI: '),
+                          transText(text: upi)
+                          
+                        ]
+                      ),
+                      Row(
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                       children: [
+                          transText(text: "Name: "),
+                          transText(text: name)
+                        ],
+                      )
+                      ],
+                      
+                    );
+                  },
+                ),
+              ),
+              Divider(),
               Container(
                 padding:
-                    EdgeInsets.only(top: 40, left: 25, right: 25, bottom: 10),
+                    EdgeInsets.only(top: 20, left: 25, right: 25, bottom: 10),
                 child: Form(
                     child: Column(
                   children: [

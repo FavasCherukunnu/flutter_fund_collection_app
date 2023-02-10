@@ -13,10 +13,12 @@ Widget transText(
     double size = 0,
     Color? color,
     bool bold = false,
-    TextOverflow? overflow}) {
+    TextOverflow? overflow,TextAlign? alignment}) {
   return Text(
+    textAlign:alignment,
     text,
     style: TextStyle(
+
         color: color,
         fontFamily: 'SofiSans',
         letterSpacing: 1,

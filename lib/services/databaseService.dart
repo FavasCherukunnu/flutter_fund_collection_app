@@ -73,6 +73,7 @@ class DatabaseService {
     return await groupCollection.doc(groupId).get();
   }
 
+
   getGroupInfoStream(
     String groupId,
   ) {
@@ -162,7 +163,7 @@ class DatabaseService {
 
   sentMessage(String groupName, String groupId, String amount, String senterIdN,
       DateTime time, String AdminId,
-      {String message = "", required bool isWithdraw}) async {
+      {required String message, required bool isWithdraw}) async {
     if (isWithdraw) {
       await groupCollection
           .doc(groupId)
