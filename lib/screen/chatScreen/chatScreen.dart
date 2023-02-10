@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_upi_payment/easy_upi_payment.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:trans_pay/screen/chatScreen/chatDetailsScreen.dart';
 import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/widget/dateTile.dart';
 import 'package:trans_pay/widget/messageTile.dart';
+import 'package:trans_pay/widget/widget.dart';
 
 class ChatScreen extends StatefulWidget {
   ChatScreen(
@@ -38,7 +41,12 @@ class _ChatScreenState extends State<ChatScreen> {
   AmountDetails totalAmountDetails = AmountDetails();
   String errorText = '';
   dynamic groupInfo;
+  bool _isUpiValid = true;
+
   final payKey = GlobalKey<FormState>();
+
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -154,20 +162,42 @@ class _ChatScreenState extends State<ChatScreen> {
             if (!currentFocus.hasPrimaryFocus) {
               currentFocus.unfocus();
             }
-            // groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
-            // final data = groupDetails!.data() as Map;
-            // final res = await EasyUpiPaymentPlatform.instance.startPayment(
-            //   EasyUpiPaymentModel(
-            //       payeeVpa: data['upiId'],
-            //       payeeName: data['upiName'],
-            //       amount: double.parse(amount),
-            //       description: 'transpay testing',
-            //     ),
-            //   );
-            //   print(res!.transactionId);
-            //   print(res);
-            amountDetails.clear();
-            await sentMessage(amount, false);
+            groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
+            final data = groupDetails!.data() as Map;
+
+            try{
+              final res = await EasyUpiPaymentPlatform.instance.startPayment(
+                EasyUpiPaymentModel(
+                    payeeVpa: data['upiId'],
+                    payeeName: data['upiName'],
+                    amount: double.parse(amount),
+                    description: 'transpay testing',
+                  ),
+                );
+              amountDetails.clear();
+              await sentMessage(amount, false);
+              if(res !=null){
+                print(res.transactionId);
+              }else{
+                print('result is null');
+              }
+            }catch(exception,subtrace){
+              exception as EasyUpiPaymentException;
+              if(exception.type == EasyUpiPaymentExceptionType.unknownException){
+                showSnackbar(context, Colors.red, 'Somthing went wrong !!!');
+              }else if(exception.type == EasyUpiPaymentExceptionType.cancelledException){
+                showSnackbar(context, Colors.red, 'You Cancelled payment!!!');
+              }else if(exception.type == EasyUpiPaymentExceptionType.appNotFoundException){
+                showSnackbar(context, Colors.red, 'App Not found!!!');
+              }else if(exception.type == EasyUpiPaymentExceptionType.failedException){
+                showSnackbar(context, Colors.red, 'Failed payment!!!');
+              }else if(exception.type == EasyUpiPaymentExceptionType.submittedException){
+                showSnackbar(context, Colors.red, 'payment is pending. if successfull approch admin!!!');
+              }
+              print('//////////////');
+              print(exception.type);
+            }
+            
           }
         }
 

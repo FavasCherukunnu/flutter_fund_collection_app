@@ -71,6 +71,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                   children: [
                     transText(text: 'UPI ID'),
                     TextFormField(
+                      controller: upiIdctrl,
                       decoration: const InputDecoration(
                         //border: OutlineInputBorder(),
                         hintText: 'Enter merchant upi id',
@@ -81,6 +82,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                     ),
                     transText(text: 'Name'),
                     TextFormField(
+                      controller: upiNamectrl,
                       decoration: const InputDecoration(
                         //border: OutlineInputBorder(),
                         hintText: 'Enter the name',
@@ -95,6 +97,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                               groupId: widget.groupId,
                               upiId: upiIdctrl.text,
                               upiName: upiNamectrl.text);
+                          Navigator.pop(context);
                         },
                         child: transText(text: 'Update'))
                   ],
@@ -169,6 +172,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
             await DatabaseService().leftFromeGroup(widget.groupId, HelperFunctions.userId!, HelperFunctions.userName!, widget.groupName);
             Navigator.pop(context);
             Navigator.pop(context);
+            break;
 
 
         }
