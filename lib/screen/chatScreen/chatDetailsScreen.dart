@@ -1,3 +1,4 @@
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trans_pay/constants/appConstants.dart';
@@ -7,6 +8,7 @@ import 'package:trans_pay/models/groupDetails.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/screen/chatScreen/addMembers.dart';
 import 'package:trans_pay/services/databaseService.dart';
+import 'package:trans_pay/services/deeplink.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
   ChatDetailsScreen(
@@ -60,42 +62,41 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
     await showDialog(
       context: context,
       builder: (context) {
-        Stream? groupinfo1 = DatabaseService().getGroupInfoStream(widget.groupId);
+        Stream? groupinfo1 =
+            DatabaseService().getGroupInfoStream(widget.groupId);
         return StatefulBuilder(builder: (context, setState) {
           return SimpleDialog(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: StreamBuilder(
                   stream: groupinfo1,
                   builder: (context, snapshot) {
                     var upi = 'loading';
                     var name = 'loading';
-                    if(snapshot.hasData){
-
+                    if (snapshot.hasData) {
                       final data = snapshot.data;
                       upi = data['upiId'];
                       name = data['upiName'];
                       setState;
                     }
                     return Column(
-                      children: [Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children:[
-                          transText(text:'UPI: '),
-                          transText(text: upi)
-                          
-                        ]
-                      ),
-                      Row(
-                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                       children: [
-                          transText(text: "Name: "),
-                          transText(text: name)
-                        ],
-                      )
+                      children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              transText(text: 'UPI: '),
+                              transText(text: upi)
+                            ]),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            transText(text: "Name: "),
+                            transText(text: name)
+                          ],
+                        )
                       ],
-                      
                     );
                   },
                 ),
@@ -173,7 +174,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   }
 
   showLeftGroupIndication() async {
-    switch(await showDialog(
+    switch (await showDialog(
         context: context,
         builder: ((context) {
           return SimpleDialog(
@@ -190,12 +191,14 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                       children: [
                         TextButton(
                             onPressed: () {
-                              Navigator.pop(context,0);
-                            }, child: transText(text: 'No')),
+                              Navigator.pop(context, 0);
+                            },
+                            child: transText(text: 'No')),
                         TextButton(
                             onPressed: () {
-                              Navigator.pop(context,1);
-                            }, child: transText(text: 'Yes'))
+                              Navigator.pop(context, 1);
+                            },
+                            child: transText(text: 'Yes'))
                       ],
                     )
                   ],
@@ -203,17 +206,19 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
               )
             ],
           );
-        }))){
-          case 0:
-            break;
-          case 1:
-            await DatabaseService().leftFromeGroup(widget.groupId, HelperFunctions.userId!, HelperFunctions.userName!, widget.groupName);
-            Navigator.pop(context);
-            Navigator.pop(context);
-            break;
-
-
-        }
+        }))) {
+      case 0:
+        break;
+      case 1:
+        await DatabaseService().leftFromeGroup(
+            widget.groupId,
+            HelperFunctions.userId!,
+            HelperFunctions.userName!,
+            widget.groupName);
+        Navigator.pop(context);
+        Navigator.pop(context);
+        break;
+    }
   }
 
   @override
@@ -229,6 +234,16 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
       appBar: AppBar(
         elevation: 0,
         actions: [
+          isAdmin('${HelperFunctions.userId}_${HelperFunctions.userName}')
+              ? IconButton(
+                  onPressed: () async {
+                    final url =
+                        await FirebaseDynamicLinkService.createDynamicLink(widget.groupId,widget.groupName);
+                    FlutterClipboard.copy(url)
+                        .then((value) => print('copied $url'));
+                  },
+                  icon: Icon(Icons.copy))
+              : SizedBox.shrink(),
           Consumer(
               //animation: loading,
               builder: (context, _, child) {

@@ -10,13 +10,18 @@ import 'package:trans_pay/constants/appConstants.dart';
 import 'package:trans_pay/helper/helper_function.dart';
 import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/constants/common.dart';
+import 'package:trans_pay/screen/chatScreen/chatScreen.dart';
+import 'package:trans_pay/screen/homeScreen.dart';
+import 'package:trans_pay/screen/searchScreen.dart';
 import 'package:trans_pay/services/authentication.dart';
 import 'package:trans_pay/services/databaseService.dart';
 
 import '../widget/widget.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({super.key});
+  LoginPage({super.key, this.groupIdN});
+
+  String? groupIdN;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -36,11 +41,19 @@ class _LoginPageState extends State<LoginPage> {
     HelperFunctions.getUserLoggedInStatus().then((value) {
       if (value == true) {
         getUserData().whenComplete(() {
-          Navigator.pushReplacementNamed(context, '/homeScreen');
+          if (widget.groupIdN == null) {
+            Navigator.pushReplacementNamed(context, '/homeScreen');
+          } else {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SearchScreen(deeplinkgroupIdN: widget.groupIdN,),
+                ));
+          }
         });
       }
     });
-    Future.delayed(Duration(seconds: 1)).whenComplete(() {
+    Future.delayed(Duration(seconds: 0)).whenComplete(() {
       setState(() {
         _loginCheking = false;
       });

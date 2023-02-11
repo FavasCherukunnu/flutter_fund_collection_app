@@ -16,7 +16,9 @@ import '../widget/groupTIle.dart';
 import '../widget/widget.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key});
+  HomeScreen({super.key, this.deepLinkGroupIdN});
+
+  String? deepLinkGroupIdN;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -46,9 +48,18 @@ class _HomeScreenState extends State<HomeScreen> {
     gettingUserData();
   }
 
+  checkMembership(List group){
+    if(group.contains(widget.deepLinkGroupIdN)){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     userdata = Provider.of<UserClass>(context);
+
 
     return Scaffold(
       backgroundColor: primaryBgColor,

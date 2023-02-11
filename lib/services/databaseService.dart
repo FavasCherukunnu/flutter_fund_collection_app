@@ -105,6 +105,10 @@ class DatabaseService {
   gpSearchByName(String groupName) {
     return groupCollection.where('groupName', isEqualTo: groupName).get();
   }
+  
+  gpSearchById(String groupId) {
+    return groupCollection.where('groupId', isEqualTo: groupId).get();
+  }  
   //add total amount of a member to database of group
 
   storeAmount(String groupId, String senterIdN, double amount) async {

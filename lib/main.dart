@@ -1,4 +1,6 @@
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,7 @@ import 'package:trans_pay/screen/searchScreen.dart';
 import 'constants/appConstants.dart';
 
 void main() async {
+  String? groupIdN=null;
   WidgetsFlutterBinding.ensureInitialized();
 
   //check it is web or android
@@ -27,11 +30,23 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  runApp(const MyApp());
+  // Get any initial links
+  final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
+  if(initialLink!=null){
+    Uri deeplink = initialLink.link;
+    groupIdN = deeplink.queryParameters['groupIdN'];
+    print('in the deep linking');
+  }else{
+    print('link is null');
+  }
+
+  runApp( MyApp(groupIdN:groupIdN));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key,this.groupIdN});
+
+  String? groupIdN;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +58,7 @@ class MyApp extends StatelessWidget {
           ),
           // initialRoute: '/homeScreen',
           routes: {
-            '/': (context) => LoginPage(),
+            '/': (context) => LoginPage(groupIdN: groupIdN,),
             '/signUp': (context) => SignUpPage(),
             '/homeScreen': (context) => HomeScreen(),
             '/profileScreen': (context) => ProfileScreen(),

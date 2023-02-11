@@ -12,8 +12,8 @@ import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/widget/widget.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
-
+  SearchScreen({super.key,this.deeplinkgroupIdN});
+  String? deeplinkgroupIdN;
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
@@ -31,6 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     // TODO: implement initState
+    widget.deeplinkgroupIdN==null?groupCtrl.text='': groupCtrl.text=getId(widget.deeplinkgroupIdN!);
     super.initState();
   }
 
@@ -55,9 +56,11 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Row(
               children: [
                 Expanded(
-                    child: TextField(
+                    child: TextFormField(
+                      
                   controller: groupCtrl,
                   style: const TextStyle(color: Colors.white),
+                  // initialValue: widget.deeplinkgroupIdN==null?null: getId(widget.deeplinkgroupIdN!),
                   decoration: const InputDecoration(
                       focusedBorder: UnderlineInputBorder(
                         borderSide:
@@ -75,10 +78,15 @@ class _SearchScreenState extends State<SearchScreen> {
                       searchMenuCtrl.add(false);
                     }
                   },
+                  
                 )),
                 IconButton(
                     onPressed: () {
-                      initiateSearchMethod();
+                      if(widget.deeplinkgroupIdN==null){
+                        initiateSearchMethod();
+                      }else{
+                        initiateSearchMethodDeepLink(getId(widget.deeplinkgroupIdN!));
+                      }
                     },
                     icon: const Icon(
                       Icons.search,
@@ -150,8 +158,19 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  initiateSearchMethodDeepLink(String groupId)async{
+    setState(() {
+      _isLoading = true;
+    });
+    groups = await DatabaseService().gpSearchById(groupId);
+    setState(() {
+      _searchFinished = true;
+      _isLoading = false;
+    });
+  }
+
   checkMembership(List groupMembers) {
-    if (groupMembers.contains('${uid}_$username')) {
+    if (groupMembers.contains('${HelperFunctions.userId}_${HelperFunctions.userName}')) {
       _isJoined = true;
     } else {
       _isJoined = false;
@@ -186,7 +205,7 @@ class _SearchScreenState extends State<SearchScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: primaryBgColor),
               onPressed: () async {
                 await DatabaseService().joinGroup(
-                    group['groupId'], uid!, username!, group['groupName']);
+                    group['groupId'], HelperFunctions.userId!, HelperFunctions.userName!, group['groupName']);
                 groups = await DatabaseService().gpSearchByName(groupCtrl.text);
 
                 setState(() {
