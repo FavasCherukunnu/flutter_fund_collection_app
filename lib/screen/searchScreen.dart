@@ -192,6 +192,10 @@ class _SearchScreenState extends State<SearchScreen> {
       trailing: _isJoined
           ? ElevatedButton(
               onPressed: () async {
+                if(group['admin']=='${HelperFunctions.userId}_${HelperFunctions.userName}'){
+                  showSnackbar(context, Colors.red, 'You are group admin !!!');
+                  return;
+                }
                 await DatabaseService().leftFromeGroup(
                     group['groupId'], HelperFunctions.userId!, HelperFunctions.userName!, group['groupName']);
                 if(widget.deeplinkgroupIdN==null){

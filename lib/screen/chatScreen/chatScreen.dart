@@ -171,7 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   payeeVpa: data['upiId'],
                   payeeName: data['upiName'],
                   amount: double.parse(amount),
-                  description: 'transpay testing',
+                  description: message.isEmpty?'payment':message,
                 ),
               );
               amountDetails.clear();

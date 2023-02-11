@@ -9,6 +9,7 @@ import 'package:trans_pay/models/userDetails.dart';
 import 'package:trans_pay/screen/chatScreen/addMembers.dart';
 import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/services/deeplink.dart';
+import 'package:trans_pay/widget/widget.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
   ChatDetailsScreen(
@@ -236,11 +237,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
         actions: [
           isAdmin('${HelperFunctions.userId}_${HelperFunctions.userName}')
               ? IconButton(
+                tooltip: 'copy group url',
                   onPressed: () async {
                     final url =
                         await FirebaseDynamicLinkService.createDynamicLink(widget.groupId,widget.groupName);
                     FlutterClipboard.copy(url)
-                        .then((value) => print('copied $url'));
+                        .then((value) => showSnackbar(context, Colors.green, 'Copied'));
                   },
                   icon: Icon(Icons.copy))
               : SizedBox.shrink(),

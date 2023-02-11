@@ -28,17 +28,18 @@ void main() async {
     ));
   } else {
     await Firebase.initializeApp();
+      // Get any initial links
+    final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
+    if(initialLink!=null){
+      Uri deeplink = initialLink.link;
+      groupIdN = deeplink.queryParameters['groupIdN'];
+      print('in the deep linking');
+    }else{
+      print('link is null');
+    }
   }
 
-  // Get any initial links
-  final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
-  if(initialLink!=null){
-    Uri deeplink = initialLink.link;
-    groupIdN = deeplink.queryParameters['groupIdN'];
-    print('in the deep linking');
-  }else{
-    print('link is null');
-  }
+
 
   runApp( MyApp(groupIdN:groupIdN));
 }
