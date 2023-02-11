@@ -193,8 +193,12 @@ class _SearchScreenState extends State<SearchScreen> {
           ? ElevatedButton(
               onPressed: () async {
                 await DatabaseService().leftFromeGroup(
-                    group['groupId'], uid!, username!, group['groupName']);
-                groups = await DatabaseService().gpSearchByName(groupCtrl.text);
+                    group['groupId'], HelperFunctions.userId!, HelperFunctions.userName!, group['groupName']);
+                if(widget.deeplinkgroupIdN==null){
+                  groups = await DatabaseService().gpSearchByName(groupCtrl.text);
+                }else{
+                  groups= await DatabaseService().gpSearchById(getId(widget.deeplinkgroupIdN!));
+                }
                 setState(() {
                   _isJoined = false;
                 });
@@ -206,7 +210,11 @@ class _SearchScreenState extends State<SearchScreen> {
               onPressed: () async {
                 await DatabaseService().joinGroup(
                     group['groupId'], HelperFunctions.userId!, HelperFunctions.userName!, group['groupName']);
-                groups = await DatabaseService().gpSearchByName(groupCtrl.text);
+                if(widget.deeplinkgroupIdN==null){
+                  groups = await DatabaseService().gpSearchByName(groupCtrl.text);
+                }else{
+                  groups= await DatabaseService().gpSearchById(getId(widget.deeplinkgroupIdN!));
+                }
 
                 setState(() {
                   _isJoined = true;
