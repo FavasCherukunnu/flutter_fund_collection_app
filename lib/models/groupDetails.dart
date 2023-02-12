@@ -20,7 +20,7 @@ class AmountDetails {
       return false;
     }
   }
-  bool isLimitReachedAmount(amount)=>limit-credited<amount?true:false;
+  bool isLimitReachedAmount(amount)=>limit>0&&limit-credited<amount?true:false;
 
   setValues(data) {
     credited = 0;

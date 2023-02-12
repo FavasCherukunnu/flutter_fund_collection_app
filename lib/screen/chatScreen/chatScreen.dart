@@ -43,8 +43,8 @@ class _ChatScreenState extends State<ChatScreen> {
   AmountDetails totalAmountDetails = AmountDetails();
   String errorText = '';
   dynamic groupInfo;
-  bool _isUpiValid = true;
   bool _errorTextChanged = false;
+  bool _isWithrawal = false;
 
   final payKey = GlobalKey<FormState>();
 
@@ -165,6 +165,7 @@ class _ChatScreenState extends State<ChatScreen> {
               double.parse(amount) >= 0 && !totalAmountDetails.isLimitReached()) {
             
             if(totalAmountDetails.isLimitReachedAmount(double.parse(amount))){
+              print('limit exeeds');
               setState(() {
                 _errorTextChanged=true;
                 errorText='Exeeds the limit';
@@ -235,6 +236,7 @@ class _ChatScreenState extends State<ChatScreen> {
           //got to bottom of listview
 
           if (amount.isNotEmpty && isNumeric(amount) && num.parse(amount) > 0) {
+            _isWithrawal = true;
             if (totalAmountDetails.isdebitable(amount: double.parse(amount))) {
               errorText = '';
               if (!currentFocus.hasPrimaryFocus) {
@@ -422,15 +424,16 @@ class _ChatScreenState extends State<ChatScreen> {
                                         ? null
                                         : double.parse(amountDetails.text))) {
                                   //errorText = '';
-                                } else {
+                                } else if(_errorTextChanged==false){
                                   errorText = 'No Money In Group';
                                 }
 
                                 totalAmountDetails.limit =  data1['Amount_limit'];
                                 print('limit is ${totalAmountDetails.limit}');
-                                if(totalAmountDetails.isLimitReached()){
+                                if(totalAmountDetails.isLimitReached() && !_isWithrawal){
                                   errorText = 'No more Money accepted';
                                 }
+                                _isWithrawal = false;
                 
                                 return SingleChildScrollView(
                                   child: Column(
