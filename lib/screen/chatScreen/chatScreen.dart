@@ -429,7 +429,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                 }
 
                                 totalAmountDetails.limit =  data1['Amount_limit'];
-                                print('limit is ${totalAmountDetails.limit}');
                                 if(totalAmountDetails.isLimitReached() && !_isWithrawal){
                                   errorText = 'No more Money accepted';
                                 }

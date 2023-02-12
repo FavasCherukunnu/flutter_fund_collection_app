@@ -144,6 +144,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                     transText(text: 'Credit Limit'),
                     TextFormField(
                       controller: creditLimitCtrl,
+                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         //border: OutlineInputBorder(),
                         hintText: 'Enter limit here',
@@ -426,7 +427,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                             size: 15,
                                             bold: true),
                                         transText(
-                                            text: limit,
+                                            text: double.parse(limit)==0?'No limit': limit,
                                             color: Colors.white,
                                             size: 16)
                                       ],
