@@ -30,11 +30,12 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   TextEditingController amountDetails = TextEditingController();
-  TextEditingController noteController= TextEditingController();
+  TextEditingController noteController = TextEditingController();
   String? userName;
   ScrollController listViewController = ScrollController();
   Stream? messages;
   Stream? totalAmount;
+  Stream? groupDetailsStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? amountDetailsStream;
   DocumentSnapshot? groupDetails;
   bool _isChatLoaded = false;
@@ -43,6 +44,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String errorText = '';
   dynamic groupInfo;
   bool _isUpiValid = true;
+  bool _errorTextChanged = false;
 
   final payKey = GlobalKey<FormState>();
 
@@ -56,6 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future getMessages() async {
     //getting group details
     groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
+    groupDetailsStream = DatabaseService().getGroupInfoStream(widget.groupId);
     totalAmount = DatabaseService().amountDetails(widget.groupId);
     amountDetailsStream = DatabaseService().amountDetails(widget.groupId);
     groupInfo = groupDetails!.data() as Map;
@@ -102,13 +105,13 @@ class _ChatScreenState extends State<ChatScreen> {
         body: chatSection());
   }
 
-  sentMessage(String amount,String message, bool isWithdraw) async {
+  sentMessage(String amount, String message, bool isWithdraw) async {
     final groupInfo = groupDetails!.data() as Map;
     String? userName = await HelperFunctions.getUserNameFromSF();
     String senterIdN = '${widget.userId}_$userName';
     await DatabaseService().sentMessage(widget.groupName, widget.groupId,
         amount, senterIdN, DateTime.now(), getId(groupInfo['admin']),
-        isWithdraw: isWithdraw,message: message);
+        isWithdraw: isWithdraw, message: message);
   }
 
   getId(String data) {
@@ -153,17 +156,27 @@ class _ChatScreenState extends State<ChatScreen> {
         final String amount = amountDetails.text;
         final String message = noteController.text;
         FocusScopeNode currentFocus = FocusScope.of(context);
+        _errorTextChanged=false;
         //got to bottom of listview
 
         if (payKey.currentState!.validate()) {
           if (amount.isNotEmpty &&
               isNumeric(amount) &&
-              double.parse(amount) >= 0) {
+              double.parse(amount) >= 0 && !totalAmountDetails.isLimitReached()) {
+            
+            if(totalAmountDetails.isLimitReachedAmount(double.parse(amount))){
+              setState(() {
+                _errorTextChanged=true;
+                errorText='Exeeds the limit';
+              });
+              return;
+            }
             if (!currentFocus.hasPrimaryFocus) {
               currentFocus.unfocus();
             }
             groupDetails = await DatabaseService().getGroupInfo(widget.groupId);
             final data = groupDetails!.data() as Map;
+            // await sentMessage(amount, message, false);
 
             try {
               final res = await EasyUpiPaymentPlatform.instance.startPayment(
@@ -171,12 +184,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   payeeVpa: data['upiId'],
                   payeeName: data['upiName'],
                   amount: double.parse(amount),
-                  description: message.isEmpty?'payment':message,
+                  description: message.isEmpty ? 'payment' : message,
                 ),
               );
               amountDetails.clear();
               noteController.clear();
-              await sentMessage(amount,message, false);
+              await sentMessage(amount, message, false);
               if (res != null) {
                 print(res.transactionId);
               } else {
@@ -201,8 +214,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 showSnackbar(context, Colors.red,
                     'payment is pending. if successfull approch admin!!!');
               }
-              print('//////////////');
-              print(exception.type);
             }
           }
         }
@@ -231,7 +242,7 @@ class _ChatScreenState extends State<ChatScreen> {
               }
               amountDetails.clear();
               noteController.clear();
-              await sentMessage(amount,message, true);
+              await sentMessage(amount, message, true);
             } else {
               setState(() {
                 errorText = 'No Money In Group';
@@ -391,104 +402,123 @@ class _ChatScreenState extends State<ChatScreen> {
                         )
                       : const CircularProgressIndicator(),
                 ),
-                _isChatLoaded
-                    ? StreamBuilder(
-                        stream: totalAmount,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            totalAmountDetails.setValues(snapshot.data.docs);
+                StreamBuilder(
+                  stream: groupDetailsStream,
+                  builder: (context, snapshot1) {
+                    return _isChatLoaded
+                        ? StreamBuilder(
+                            stream: totalAmount,
+                            builder: (context, snapshot) {
+                              if (snapshot1.hasData&&snapshot.hasData) {
+                                totalAmountDetails.setValues(snapshot.data.docs);
 
-                            if (totalAmountDetails.isdebitable(
-                                amount: amountDetails.text.isEmpty
-                                    ? null
-                                    : double.parse(amountDetails.text))) {
-                              errorText = '';
-                            } else {
-                              errorText = 'No Money In Group';
-                            }
+                                final data1 = snapshot1.data;
+                                if(_errorTextChanged==false){
+                                  errorText='';
+                                }
+                                
+                                if (totalAmountDetails.isdebitable(
+                                    amount: amountDetails.text.isEmpty
+                                        ? null
+                                        : double.parse(amountDetails.text))) {
+                                  //errorText = '';
+                                } else {
+                                  errorText = 'No Money In Group';
+                                }
 
-                            return SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  Container(
-                                    margin:
-                                        const EdgeInsets.fromLTRB(5, 10, 5, 5),
-                                    padding:
-                                        const EdgeInsets.fromLTRB(15, 20, 5, 20),
-                                    decoration: const BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(20)),
-                                      color: Colors.white,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Flexible(
-                                          child: Form(
-                                            key: payKey,
-                                            child: Column(
-                                              children: [
-                                                TextFormField(
-                                                  maxLines: null,
-                                                  controller: noteController,
-                                                  textInputAction: TextInputAction.newline,
-                                                  decoration:
-                                                      const InputDecoration
-                                                          .collapsed(
-                                                    hintText:
-                                                        'Add Note(Optional)',
-                                                    hintStyle: TextStyle(
-                                                      fontFamily: 'SofiSans',
-                                                      letterSpacing: 1,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Divider(),
-                                                TextFormField(
-                                                  validator: (value) {
-                                                    if (value!.isEmpty) {
-                                                      return 'Please Enter the amount';
-                                                    }
-                                                  },
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  controller: amountDetails,
-                                                  // onSubmitted: (value) {
-                                            
-                                                  // },
-                                                  style: const TextStyle(
-                                                    fontFamily: 'SofiSans',
-                                                    letterSpacing: 1,
-                                                  ),
-                                                  //controller: ,
-                                                  decoration:
-                                                      const InputDecoration
-                                                          .collapsed(
-                                                    hintText: 'Enter Amount',
-                                                    hintStyle: TextStyle(
-                                                      fontFamily: 'SofiSans',
-                                                      letterSpacing: 1,
-                                                    ),
-                                                  ),
-                                                  //focusNode: focusNode,
-                                                  autofocus: false,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                totalAmountDetails.limit =  data1['Amount_limit'];
+                                print('limit is ${totalAmountDetails.limit}');
+                                if(totalAmountDetails.isLimitReached()){
+                                  errorText = 'No more Money accepted';
+                                }
+                
+                                return SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        margin:
+                                            const EdgeInsets.fromLTRB(5, 10, 5, 5),
+                                        padding: const EdgeInsets.fromLTRB(
+                                            15, 20, 5, 20),
+                                        decoration: const BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.all(Radius.circular(20)),
+                                          color: Colors.white,
                                         ),
-                                        buildbottombutton()!
-                                      ],
-                                    ),
+                                        child: Row(
+                                          children: [
+                                            Flexible(
+                                              child: Form(
+                                                key: payKey,
+                                                child: Column(
+                                                  children: [
+                                                    TextFormField(
+                                                      maxLines: null,
+                                                      controller: noteController,
+                                                      textInputAction:
+                                                          TextInputAction.newline,
+                                                      decoration:
+                                                          const InputDecoration
+                                                              .collapsed(
+                                                        hintText:
+                                                            'Add Note(Optional)',
+                                                        hintStyle: TextStyle(
+                                                          fontFamily: 'SofiSans',
+                                                          letterSpacing: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Divider(),
+                                                    TextFormField(
+                                                      validator: (value) {
+                                                        if (value!.isEmpty) {
+                                                          return 'Please Enter the amount';
+                                                        }
+                                                      },
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      controller: amountDetails,
+                                                      // onSubmitted: (value) {
+                
+                                                      // },
+                                                      style: const TextStyle(
+                                                        fontFamily: 'SofiSans',
+                                                        letterSpacing: 1,
+                                                      ),
+                                                      //controller: ,
+                                                      decoration:
+                                                          const InputDecoration
+                                                              .collapsed(
+                                                        hintText: 'Enter Amount',
+                                                        hintStyle: TextStyle(
+                                                          fontFamily: 'SofiSans',
+                                                          letterSpacing: 1,
+                                                        ),
+                                                      ),
+                                                      //focusNode: focusNode,
+                                                      autofocus: false,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            buildbottombutton()!
+                                          ],
+                                        ),
+                                      ),
+                                      transText(text: errorText, color: Colors.red),
+                                    ],
                                   ),
-                                  transText(text: errorText, color: Colors.red),
-                                ],
-                              ),
-                            );
-                          } else {
-                            return SizedBox.shrink();
-                          }
-                        })
-                    : Container()
+                                );
+                                //
+                
+                              } else {
+                                return SizedBox.shrink();
+                              }
+                            })
+                        : Container();
+                  }
+                )
               ],
             );
           } else {

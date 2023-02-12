@@ -59,6 +59,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   showUpiDetails() async {
     final upiIdctrl = TextEditingController();
     final upiNamectrl = TextEditingController();
+    final creditLimitCtrl = TextEditingController();
 
     await showDialog(
       context: context,
@@ -76,10 +77,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                   builder: (context, snapshot) {
                     var upi = 'loading';
                     var name = 'loading';
+                    var limit = 'loading';
                     if (snapshot.hasData) {
                       final data = snapshot.data;
                       upi = data['upiId'];
                       name = data['upiName'];
+                      limit = data['Amount_limit'].toString();
                       setState;
                     }
                     return Column(
@@ -95,6 +98,13 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                           children: [
                             transText(text: "Name: "),
                             transText(text: name)
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            transText(text: "Credit Limit: "),
+                            transText(text: limit)
                           ],
                         )
                       ],
@@ -131,12 +141,24 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                     SizedBox(
                       height: 20,
                     ),
+                    transText(text: 'Credit Limit'),
+                    TextFormField(
+                      controller: creditLimitCtrl,
+                      decoration: const InputDecoration(
+                        //border: OutlineInputBorder(),
+                        hintText: 'Enter limit here',
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
                     ElevatedButton(
                         onPressed: () async {
                           await DatabaseService().updateUpiValues(
                               groupId: widget.groupId,
                               upiId: upiIdctrl.text,
-                              upiName: upiNamectrl.text);
+                              upiName: upiNamectrl.text,
+                              creditLimit: double.parse(creditLimitCtrl.text.isEmpty?'0':creditLimitCtrl.text));
                           Navigator.pop(context);
                         },
                         child: transText(text: 'Update'))
@@ -252,6 +274,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
             return isAdmin(
                     '${HelperFunctions.userId}_${HelperFunctions.userName}')
                 ? IconButton(
+                  tooltip: 'Add members',
                     onPressed: () {
                       showAddMembers();
                     },
@@ -260,10 +283,11 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
           }),
           isAdmin('${HelperFunctions.userId}_${HelperFunctions.userName}')
               ? IconButton(
+                  tooltip: 'edit group details',
                   onPressed: () {
                     showUpiDetails();
                   },
-                  icon: Icon(Icons.payment))
+                  icon: Icon(Icons.settings))
               : IconButton(
                   onPressed: () {
                     showLeftGroupIndication();
@@ -282,6 +306,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
               String admin = group['admin'];
               adminIdN = admin;
               String groupName = group['groupName'];
+              String limit = group['Amount_limit'].toString();
               //final members = group['members'];
               // setFullLoaded();
 
@@ -301,7 +326,7 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                         Container(
                           color: primaryColor,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            //crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               CircleAvatar(
                                 backgroundColor: Colors.white,
@@ -325,13 +350,12 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 5),
+                                padding: const EdgeInsets.only(top: 1,left: 20,right: 20,bottom: 6),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     transText(
-                                        text: 'Admin: ',
+                                        text: 'ADMIN: ',
                                         color: Colors.white,
                                         size: 15,
                                         bold: true),
@@ -347,54 +371,71 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                               //   builder: (context, snapshot) {
                               //
                               // return
-                              Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      transText(
-                                          text: 'CREDITTED: ',
-                                          color: Colors.white,
-                                          size: 15,
-                                          bold: true),
-                                      transText(
-                                          text: amounts.credited.toString(),
-                                          color: Colors.white,
-                                          size: 16)
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      transText(
-                                          text: 'DEBITTED: ',
-                                          color: Colors.white,
-                                          size: 15,
-                                          bold: true),
-                                      transText(
-                                          text: amounts.debited.toString(),
-                                          color: Colors.white,
-                                          size: 16)
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      transText(
-                                          text: 'BALANCE: ',
-                                          color: Colors.white,
-                                          size: 15,
-                                          bold: true),
-                                      transText(
-                                          text: amounts.getBalance.toString(),
-                                          color: Colors.white,
-                                          size: 16)
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  )
-                                ],
+                              Container(
+                                width: 200,
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        transText(
+                                            text: 'CREDITTED: ',
+                                            color: Colors.white,
+                                            size: 15,
+                                            bold: true),
+                                        transText(
+                                            text: amounts.credited.toString(),
+                                            color: Colors.white,
+                                            size: 16)
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        transText(
+                                            text: 'DEBITTED: ',
+                                            color: Colors.white,
+                                            size: 15,
+                                            bold: true),
+                                        transText(
+                                            text: amounts.debited.toString(),
+                                            color: Colors.white,
+                                            size: 16)
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        transText(
+                                            text: 'BALANCE: ',
+                                            color: Colors.white,
+                                            size: 15,
+                                            bold: true),
+                                        transText(
+                                            text: amounts.getBalance.toString(),
+                                            color: Colors.white,
+                                            size: 16)
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        transText(
+                                            text: 'LIMIT: ',
+                                            color: Colors.white,
+                                            size: 15,
+                                            bold: true),
+                                        transText(
+                                            text: limit,
+                                            color: Colors.white,
+                                            size: 16)
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    )
+                                  ],
+                                ),
                               )
                             ],
                           ),

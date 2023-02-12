@@ -2,6 +2,7 @@ class AmountDetails {
   double credited = 0;
   double debited = 0;
   double balance = 0;
+  dynamic limit =0;
 
   double get getBalance => credited - debited;
   bool isdebitable({double? amount}) => amount == null
@@ -11,6 +12,15 @@ class AmountDetails {
       : credited - debited >= amount
           ? true
           : false;
+
+  bool isLimitReached(){
+    if(limit>0 && credited>=limit){
+      return true;
+    }else{
+      return false;
+    }
+  }
+  bool isLimitReachedAmount(amount)=>limit-credited<amount?true:false;
 
   setValues(data) {
     credited = 0;

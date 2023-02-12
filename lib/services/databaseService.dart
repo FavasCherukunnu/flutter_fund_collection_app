@@ -49,6 +49,7 @@ class DatabaseService {
       "upiName":"",
       "recentMessage": "",
       "recentMessageSender": "",
+      "Amount_limit":0,
     });
     // update the members
     await groupDocumentReference.update({
@@ -65,8 +66,8 @@ class DatabaseService {
     });
   }
 
-  updateUpiValues({required String groupId,required String upiId, required String upiName}){
-    groupCollection.doc(groupId).update({'upiId':upiId,'upiName':upiName});
+  updateUpiValues({required String groupId,required String upiId, required String upiName,required double creditLimit}){
+    groupCollection.doc(groupId).update({'upiId':upiId,'upiName':upiName,'Amount_limit':creditLimit});
   }
 
   getGroupInfo(String groupId) async {
