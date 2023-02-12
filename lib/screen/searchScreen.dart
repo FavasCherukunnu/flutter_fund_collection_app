@@ -12,7 +12,7 @@ import 'package:trans_pay/services/databaseService.dart';
 import 'package:trans_pay/widget/widget.dart';
 
 class SearchScreen extends StatefulWidget {
-  SearchScreen({super.key,this.deeplinkgroupIdN});
+  SearchScreen({super.key, this.deeplinkgroupIdN});
   String? deeplinkgroupIdN;
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -31,7 +31,12 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    widget.deeplinkgroupIdN==null?groupCtrl.text='': groupCtrl.text=getId(widget.deeplinkgroupIdN!);
+    if (widget.deeplinkgroupIdN == null) {
+      groupCtrl.text = '';
+    } else {
+      groupCtrl.text = getId(widget.deeplinkgroupIdN!);
+      initiateSearchMethodDeepLink(getId(widget.deeplinkgroupIdN!));
+    }
     super.initState();
   }
 
@@ -57,7 +62,6 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 Expanded(
                     child: TextFormField(
-                      
                   controller: groupCtrl,
                   style: const TextStyle(color: Colors.white),
                   // initialValue: widget.deeplinkgroupIdN==null?null: getId(widget.deeplinkgroupIdN!),
@@ -78,16 +82,17 @@ class _SearchScreenState extends State<SearchScreen> {
                       searchMenuCtrl.add(false);
                     }
                   },
-                  
                 )),
-                widget.deeplinkgroupIdN==null?IconButton(
-                    onPressed: () {
-                      initiateSearchMethod();
-                    },
-                    icon: const Icon(
-                      Icons.search,
-                      color: Colors.white,
-                    )):ElevatedButton(onPressed:()=> initiateSearchMethodDeepLink(getId(widget.deeplinkgroupIdN!)), child: transText(text: 'Join')),
+                widget.deeplinkgroupIdN == null
+                    ? IconButton(
+                        onPressed: () {
+                          initiateSearchMethod();
+                        },
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ))
+                    : SizedBox.shrink(),
                 StreamBuilder(
                   stream: searchMenuCtrl.stream,
                   builder: (context, snapshot) {
@@ -154,7 +159,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  initiateSearchMethodDeepLink(String groupId)async{
+  initiateSearchMethodDeepLink(String groupId) async {
     setState(() {
       _isLoading = true;
     });
@@ -166,7 +171,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   checkMembership(List groupMembers) {
-    if (groupMembers.contains('${HelperFunctions.userId}_${HelperFunctions.userName}')) {
+    if (groupMembers
+        .contains('${HelperFunctions.userId}_${HelperFunctions.userName}')) {
       _isJoined = true;
     } else {
       _isJoined = false;
@@ -188,16 +194,22 @@ class _SearchScreenState extends State<SearchScreen> {
       trailing: _isJoined
           ? ElevatedButton(
               onPressed: () async {
-                if(group['admin']=='${HelperFunctions.userId}_${HelperFunctions.userName}'){
+                if (group['admin'] ==
+                    '${HelperFunctions.userId}_${HelperFunctions.userName}') {
                   showSnackbar(context, Colors.red, 'You are group admin !!!');
                   return;
                 }
                 await DatabaseService().leftFromeGroup(
-                    group['groupId'], HelperFunctions.userId!, HelperFunctions.userName!, group['groupName']);
-                if(widget.deeplinkgroupIdN==null){
-                  groups = await DatabaseService().gpSearchByName(groupCtrl.text);
-                }else{
-                  groups= await DatabaseService().gpSearchById(getId(widget.deeplinkgroupIdN!));
+                    group['groupId'],
+                    HelperFunctions.userId!,
+                    HelperFunctions.userName!,
+                    group['groupName']);
+                if (widget.deeplinkgroupIdN == null) {
+                  groups =
+                      await DatabaseService().gpSearchByName(groupCtrl.text);
+                } else {
+                  groups = await DatabaseService()
+                      .gpSearchById(getId(widget.deeplinkgroupIdN!));
                 }
                 setState(() {
                   _isJoined = false;
@@ -209,11 +221,16 @@ class _SearchScreenState extends State<SearchScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: primaryBgColor),
               onPressed: () async {
                 await DatabaseService().joinGroup(
-                    group['groupId'], HelperFunctions.userId!, HelperFunctions.userName!, group['groupName']);
-                if(widget.deeplinkgroupIdN==null){
-                  groups = await DatabaseService().gpSearchByName(groupCtrl.text);
-                }else{
-                  groups= await DatabaseService().gpSearchById(getId(widget.deeplinkgroupIdN!));
+                    group['groupId'],
+                    HelperFunctions.userId!,
+                    HelperFunctions.userName!,
+                    group['groupName']);
+                if (widget.deeplinkgroupIdN == null) {
+                  groups =
+                      await DatabaseService().gpSearchByName(groupCtrl.text);
+                } else {
+                  groups = await DatabaseService()
+                      .gpSearchById(getId(widget.deeplinkgroupIdN!));
                 }
 
                 setState(() {
