@@ -80,18 +80,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   },
                   
                 )),
-                IconButton(
+                widget.deeplinkgroupIdN==null?IconButton(
                     onPressed: () {
-                      if(widget.deeplinkgroupIdN==null){
-                        initiateSearchMethod();
-                      }else{
-                        initiateSearchMethodDeepLink(getId(widget.deeplinkgroupIdN!));
-                      }
+                      initiateSearchMethod();
                     },
                     icon: const Icon(
                       Icons.search,
                       color: Colors.white,
-                    )),
+                    )):ElevatedButton(onPressed:()=> initiateSearchMethodDeepLink(getId(widget.deeplinkgroupIdN!)), child: transText(text: 'Join')),
                 StreamBuilder(
                   stream: searchMenuCtrl.stream,
                   builder: (context, snapshot) {
