@@ -197,6 +197,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 print('result is null');
               }
             } catch (exception, subtrace) {
+              try{
               exception as EasyUpiPaymentException;
               if (exception.type ==
                   EasyUpiPaymentExceptionType.unknownException) {
@@ -214,6 +215,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   EasyUpiPaymentExceptionType.submittedException) {
                 showSnackbar(context, Colors.red,
                     'payment is pending. if successfull approch admin!!!');
+              }
+              }catch (e){
+
+              print('exception occured');
+              await sentMessage(amount, message, false);
               }
             }
           }
